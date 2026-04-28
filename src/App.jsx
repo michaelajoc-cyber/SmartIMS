@@ -550,7 +550,7 @@ export default function App() {
     return cleanedData;
   }, []);
 
-  const [items, setItems] = useState(savedData?.items?.length ? savedData.items : initialItems);
+  const [items, setItems] = useState(savedData?.items || []);
   const [logs, setLogs] = useState(savedData?.logs?.length ? savedData.logs : initialLogs);
   const [users, setUsers] = useState(savedData?.users?.length ? savedData.users : []);
   const [sales, setSales] = useState(savedData?.sales?.length ? savedData.sales : initialSales);
