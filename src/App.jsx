@@ -2363,7 +2363,6 @@ function handleScanValue(rawValue) {
             Showing {filteredItems.length} of {enrichedItems.length} items
           </p>
         </div>
-      </div>
 
       {selectedItem && (
         <div className="hidden bg-white px-6 pb-6 pt-5 xl:block">
