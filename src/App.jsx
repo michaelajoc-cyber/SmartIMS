@@ -3492,7 +3492,7 @@ function handleScanValue(rawValue) {
   return (
     <div className="min-h-screen bg-[#f8f8fb] text-slate-900">
       <div className="grid min-h-screen lg:grid-cols-[330px_1fr]">
-      <div className={`fixed left-0 top-0 z-40 h-full w-[330px] bg-white transition-transform duration-300 lg:static lg:translate-x-0 ${
+      <div className={`fixed left-0 top-0 z-40 h-full w-[330px] overflow-y-auto bg-white transition-transform duration-300 lg:static lg:translate-x-0 ${
     mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
   }`}
 >
@@ -3552,7 +3552,7 @@ function handleScanValue(rawValue) {
   </div>
 
   {/* FOOTER */}
-  <div className="px-6 pb-24 sm:pb-6">
+  <div className="px-6 pb-32 sm:pb-6">
     <div className="rounded-3xl border border-slate-200 p-5">
       <div className="flex items-center gap-4">
         <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-white">
@@ -3569,7 +3569,7 @@ function handleScanValue(rawValue) {
       </div>
     </div>
 
-    <div className="mt-4 pb-24 sm:pb-6">
+    <div className="mt-4 pb-20 sm:pb-6">
       {isLoggedIn ? (
         <button
           type="button"
