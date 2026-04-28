@@ -3527,7 +3527,6 @@ async function deleteUser(id) {
       >
         <span className="flex items-center gap-3">
           <Settings className="h-5 w-5" />
-          Settings
         </span>
         <ChevronRight className="h-4 w-4" />
       </button>
