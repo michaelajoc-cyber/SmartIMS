@@ -39,7 +39,7 @@ import {
 } from "lucide-react";
 
 const GOOGLE_SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycbyDZVebjNSfysdCXPwOK9MZZVf68uNSaTOt3vu8aMBxuEouWiD1Hgv1enJy_jo9017lEQ/exec";
+  "hhttps://script.google.com/macros/s/AKfycbyDZVebjNSfysdCXPwOK9MZZVf68uNSaTOt3vu8aMBxuEouWiD1Hgv1enJy_jo9017lEQ/exec";
 
 const initialItems = [
   {
@@ -218,7 +218,8 @@ const navItems = [
   { key: "Restock", icon: RotateCcw },
   { key: "Sales", icon: ShoppingCart },
   { key: "Document Scanning", icon: ScanLine },
-  { key: "Operation Hub", icon: ClipboardList, adminOnly: true },
+  { key: "Operation Hub", icon: ClipboardList },
+  { key: "Settings", icon: Settings },
 ];
 
 const roles = {
@@ -604,6 +605,8 @@ export default function App() {
   const [saleSaveStatus, setSaleSaveStatus] = useState("idle");
   const [restockSaveStatus, setRestockSaveStatus] = useState("idle");
   const [userSaveStatus, setUserSaveStatus] = useState("idle");
+  const [passwordForm, setPasswordForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
+  const [passwordSaveStatus, setPasswordSaveStatus] = useState("idle");
   const [operationOrders, setOperationOrders] = useState(savedData?.operationOrders || []);
   const [operationForm, setOperationForm] = useState({ type: "Job Order", title: "", amount: "", dueDate: "", notes: "", customer: "", status: "Pending" });
   const [settingsTab, setSettingsTab] = useState("user");
@@ -808,17 +811,26 @@ export default function App() {
 
   useEffect(() => {
     const openItemFromHash = () => {
-      const match = window.location.hash.match(/item=([^&]+)/);
-      if (!match) return;
-      const sku = decodeURIComponent(match[1]);
-      const found = enrichedItems.find((item) => String(item.id) === sku || String(item.barcode || "") === sku);
+      const params = new URLSearchParams(String(window.location.hash || "").replace(/^#/, ""));
+      const sku = params.get("item");
+      if (!sku) return;
+
+      const found = enrichedItems.find(
+        (item) => String(item.id) === String(sku) || String(item.barcode || "") === String(sku)
+      );
+
       if (found) {
         setSelectedItemId(found.id);
+        setSearch("");
+        setCategory("All");
         setCurrentPage("Inventory");
         setMobileDetailsOpen(true);
-        setTimeout(() => document.getElementById(`item-row-`)?.scrollIntoView({ behavior: "smooth", block: "center" }), 300);
+        setTimeout(() => {
+          document.getElementById(`item-row-${found.id}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+        }, 350);
       }
     };
+
     openItemFromHash();
     window.addEventListener("hashchange", openItemFromHash);
     return () => window.removeEventListener("hashchange", openItemFromHash);
@@ -848,11 +860,18 @@ export default function App() {
     const text = await res.text();
     console.log("SYNC RESPONSE:", text);
 
+    let parsed;
     try {
-      return JSON.parse(text);
+      parsed = JSON.parse(text);
     } catch {
-      return text;
+      parsed = text;
     }
+
+    if (parsed && typeof parsed === "object" && parsed.success === false) {
+      throw new Error(parsed.message || "Google Sheets sync returned an error");
+    }
+
+    return parsed;
   }
 
   async function apiGet(action) {
@@ -1163,30 +1182,20 @@ async function pushAllToSheets(nextData = {}, extra = {}) {
     setSyncStatus("Saving locally and syncing to Google Sheets...");
 
     await syncToGoogleSheet({
-      action: extra.action || "syncAllData",
+      action: "syncAllData",
       payload: dataToSave,
       items: dataToSave.items,
       logs: dataToSave.logs,
       users: dataToSave.users,
       sales: dataToSave.sales,
       operationOrders: dataToSave.operationOrders,
+      lastAction: extra.action || "syncAllData",
       item: extra.item || null,
       user: extra.user || null,
       sale: extra.sale || null,
       log: extra.log || null,
+      timestamp: new Date().toISOString(),
     });
-
-    if (extra.action && extra.action !== "syncAllData") {
-      await syncToGoogleSheet({
-        action: "syncAllData",
-        payload: dataToSave,
-        items: dataToSave.items,
-        logs: dataToSave.logs,
-        users: dataToSave.users,
-        sales: dataToSave.sales,
-        operationOrders: dataToSave.operationOrders,
-      });
-    }
 
     const time = new Date().toLocaleTimeString();
     setLastSync(time);
@@ -1332,7 +1341,7 @@ async function saveRestock(e) {
   setTimeout(() => {
     setRestockSaveStatus("idle");
     setRestockOpen(false);
-  }, 800);
+  }, 1000);
 }
 
 async function saveSale(e) {
@@ -1816,6 +1825,51 @@ async function deleteUser(id) {
     saveLocalData({ items, logs, users, sales, operationOrders, currentRole: found.role, currentUserEmail: found.username || found.email, isLoggedIn: true });
   }
 
+  async function handleChangePassword(e) {
+    e.preventDefault();
+
+    if (!isLoggedIn || !currentUser) {
+      setLoginError("Please log in first.");
+      return;
+    }
+
+    if (String(currentUser.password || "") !== String(passwordForm.currentPassword || "")) {
+      setLoginError("Current password is incorrect.");
+      return;
+    }
+
+    if (!passwordForm.newPassword || passwordForm.newPassword.length < 4) {
+      setLoginError("New password must be at least 4 characters.");
+      return;
+    }
+
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      setLoginError("New passwords do not match.");
+      return;
+    }
+
+    setPasswordSaveStatus("saving");
+
+    const updatedUsers = users.map((u) =>
+      String(u.id) === String(currentUser.id)
+        ? { ...u, password: passwordForm.newPassword, updatedAt: new Date().toISOString() }
+        : u
+    );
+
+    setUsers(updatedUsers);
+    setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+    setLoginError("");
+    persistAll({ users: updatedUsers });
+
+    await pushAllToSheets(
+      { items, logs, users: updatedUsers, sales, operationOrders },
+      { action: "CHANGE_PASSWORD", user: updatedUsers.find((u) => String(u.id) === String(currentUser.id)) }
+    );
+
+    setPasswordSaveStatus("saved");
+    setTimeout(() => setPasswordSaveStatus("idle"), 1500);
+  }
+
   function handleLogout() {
     setIsLoggedIn(false);
     setCurrentUserEmail("");
@@ -2268,7 +2322,7 @@ async function deleteUser(id) {
           <div className="mt-4 flex justify-center">
             <div className="flex h-[160px] w-[160px] flex-col items-center justify-center rounded-2xl border border-slate-300">
               <QRCodeSVG
-                value={window.location.origin + window.location.pathname + "#item=" + encodeURIComponent(selectedItem.id)}
+                value={window.location.origin + window.location.pathname + "#item=" + encodeURIComponent(selectedItem.id) + "&view=details"}
                 size={120}
               />
               <p className="mt-2 text-xs text-slate-600">{selectedItem.id}</p>
@@ -2365,10 +2419,10 @@ async function deleteUser(id) {
         </button>
         <div>
           <h1 className="text-3xl font-semibold text-slate-900 sm:text-4xl">
-            Mobile Restock Form
+            Restock Form
           </h1>
           <p className="mt-1 text-slate-500">
-            Quick stock logging for warehouse and field staff
+            View stock adjustments. Staff login is required to save changes
           </p>
         </div>
       </div>
@@ -2452,6 +2506,7 @@ async function deleteUser(id) {
 
           <div className="sticky bottom-0 bg-white pt-2">
           <AppButton
+   type="submit"       
   className="h-12 w-full"
   disabled={!permissions.canEditStock || restockSaveStatus === "restocking"}
 >
@@ -2480,7 +2535,7 @@ async function deleteUser(id) {
         <div>
           <h1 className="text-3xl font-semibold text-slate-900 sm:text-4xl">Sales</h1>
           <p className="mt-1 text-slate-500">
-            Record item sales and automatically reduce stock
+            View sales records. Staff login is required to record a sale
           </p>
         </div>
       </div>
@@ -2721,63 +2776,25 @@ async function deleteUser(id) {
         </button>
         <div>
           <h1 className="text-3xl font-semibold text-slate-900 sm:text-4xl">Operation Hub</h1>
-          <p className="mt-1 text-slate-500">Admin workspace for job orders, payables, salaries, tax, rent, and customer invoices.</p>
+          <p className="mt-1 text-slate-500">View job orders, payables, salaries, tax, rent, and customer invoices. Admin login is required to create records.</p>
         </div>
       </div>
-
-      {currentRole !== "admin" ? (
-        <div className="rounded-3xl border border-amber-200 bg-amber-50 p-5 text-amber-800">Admin access only.</div>
-      ) : (
-        <div className="grid gap-6 xl:grid-cols-[420px_1fr]">
+      {currentRole !== "admin" && (<div className="mb-6 rounded-3xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-800">View-only mode. Please log in as Admin to create or edit operation records.</div>)}
+      <div className={`grid gap-6 ${currentRole === "admin" ? "xl:grid-cols-[420px_1fr]" : "grid-cols-1"}`}>
+        {currentRole === "admin" && (
           <form onSubmit={saveOperationOrder} className="rounded-3xl border border-slate-200 bg-white p-5 space-y-4">
             <h2 className="text-xl font-semibold text-slate-900">Create Document</h2>
-            <Field label="Type">
-              <select value={operationForm.type} onChange={(e) => setOperationForm((p) => ({ ...p, type: e.target.value }))} className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none">
-                <option>Job Order</option>
-                <option>Factory Job Order Sheet</option>
-                <option>Customer Invoice</option>
-                <option>Scheduled Payment</option>
-                <option>Rent</option>
-                <option>Tax</option>
-                <option>Staff Salary</option>
-                <option>Admin Paperwork</option>
-              </select>
-            </Field>
-            <Field label="Title / Reference">
-              <input value={operationForm.title} onChange={(e) => setOperationForm((p) => ({ ...p, title: e.target.value }))} className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none" placeholder="Example: Factory repair order / April rent" />
-            </Field>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Amount"><input type="number" value={operationForm.amount} onChange={(e) => setOperationForm((p) => ({ ...p, amount: e.target.value }))} className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none" /></Field>
-              <Field label="Due Date"><input type="date" value={operationForm.dueDate} onChange={(e) => setOperationForm((p) => ({ ...p, dueDate: e.target.value }))} className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none" /></Field>
-            </div>
+            <Field label="Type"><select value={operationForm.type} onChange={(e) => setOperationForm((p) => ({ ...p, type: e.target.value }))} className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none"><option>Job Order</option><option>Factory Job Order Sheet</option><option>Customer Invoice</option><option>Scheduled Payment</option><option>Rent</option><option>Tax</option><option>Staff Salary</option><option>Admin Paperwork</option></select></Field>
+            <Field label="Title / Reference"><input value={operationForm.title} onChange={(e) => setOperationForm((p) => ({ ...p, title: e.target.value }))} className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none" placeholder="Example: Factory repair order / April rent" /></Field>
+            <div className="grid gap-4 sm:grid-cols-2"><Field label="Amount"><input type="number" value={operationForm.amount} onChange={(e) => setOperationForm((p) => ({ ...p, amount: e.target.value }))} className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none" /></Field><Field label="Due Date"><input type="date" value={operationForm.dueDate} onChange={(e) => setOperationForm((p) => ({ ...p, dueDate: e.target.value }))} className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none" /></Field></div>
             <Field label="Customer / Payee"><input value={operationForm.customer} onChange={(e) => setOperationForm((p) => ({ ...p, customer: e.target.value }))} className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none" /></Field>
             <Field label="Notes / Item Details"><textarea value={operationForm.notes} onChange={(e) => setOperationForm((p) => ({ ...p, notes: e.target.value }))} className="min-h-[110px] w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none" /></Field>
             <AppButton className="h-12 w-full"><Save className="mr-2 h-4 w-4" />Save to Hub</AppButton>
-          </form>
-
-          <div className="rounded-3xl border border-slate-200 bg-white p-5">
-            <h2 className="mb-4 text-xl font-semibold text-slate-900">Admin Documents</h2>
-            <div className="space-y-3">
-              {operationOrders.length === 0 && <p className="text-sm text-slate-500">No operation records yet.</p>}
-              {operationOrders.map((order) => (
-                <div key={order.id} className="rounded-2xl border border-slate-200 p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="font-semibold text-slate-900">{order.title}</p>
-                      <p className="text-sm text-slate-500">{order.type} • Due: {order.dueDate || "—"} • {formatCurrency(order.amount)}</p>
-                      <p className="mt-2 text-sm text-slate-600">{order.notes || "No notes"}</p>
-                    </div>
-                    <AppButton variant="outline" onClick={() => printOperationOrder(order)}><Printer className="mr-2 h-4 w-4" />Print</AppButton>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+          </form>)}
+        <div className="rounded-3xl border border-slate-200 bg-white p-5"><h2 className="mb-4 text-xl font-semibold text-slate-900">Operation Documents</h2><div className="space-y-3">{operationOrders.length === 0 && <p className="text-sm text-slate-500">No operation records yet.</p>}{operationOrders.map((order) => (<div key={order.id} className="rounded-2xl border border-slate-200 p-4"><div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"><div><p className="font-semibold text-slate-900">{order.title}</p><p className="text-sm text-slate-500">{order.type} • Due: {order.dueDate || "—"} • {formatCurrency(order.amount)}</p><p className="mt-2 text-sm text-slate-600">{order.notes || "No notes"}</p></div><AppButton variant="outline" onClick={() => printOperationOrder(order)}><Printer className="mr-2 h-4 w-4" />Print</AppButton></div></div>))}</div></div>
+      </div>
     </div>
   );
-
 
   const renderUsersPage = () => (
     <div className="p-4 sm:p-6 xl:p-8">
@@ -3308,7 +3325,7 @@ async function deleteUser(id) {
             <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
               <QRCodeSVG 
               id="qr-download-svg"
-              value={window.location.origin + window.location.pathname + "#item=" + encodeURIComponent(qrModalItem.id)} 
+              value={window.location.origin + window.location.pathname + "#item=" + encodeURIComponent(qrModalItem.id) + "&view=details"} 
               size={160} />
               
             </div>
@@ -3397,7 +3414,9 @@ async function deleteUser(id) {
         </div>
     )};
 
-  const needsFirstAdminSetup = activeUsers.length === 0;
+    const hasUsers = users.some(
+      (u) => !u.isDeleted && u.username && u.password
+    );
 
   if (needsFirstAdminSetup) {
     return (
@@ -3505,15 +3524,16 @@ async function deleteUser(id) {
 
   {/* NAVIGATION */}
   <div className="flex-1 space-y-3 px-6 py-6">
-    {navItems.filter((item) => !item.adminOnly || (isLoggedIn && currentRole === "admin")).map((item) => (
+    {navItems.map((item) => (
       <SidebarItem
         key={item.key}
         icon={item.icon}
         label={item.key}
         active={currentPage === item.key}
         onClick={() => {
-          if (!isLoggedIn && item.key !== "Dashboard" && item.key !== "Inventory") {
-            setLoginOpen(true);
+          if (item.key === "Settings") {
+            setSettingsOpen(true);
+            setMobileMenuOpen(false);
             return;
           }
           setCurrentPage(item.key);
@@ -3581,10 +3601,10 @@ async function deleteUser(id) {
         <main className="min-w-0 bg-white pt-2">
           {currentPage === "Dashboard" && renderDashboard()}
           {currentPage === "Inventory" && renderInventory()}
-          {currentPage === "Restock" && (isLoggedIn ? renderRestockPage() : renderDashboard())}
-          {currentPage === "Sales" && (isLoggedIn ? renderSalesPage() : renderDashboard())}
-          {currentPage === "Document Scanning" && (isLoggedIn ? renderScanPage() : renderDashboard())}
-          {currentPage === "Operation Hub" && (isLoggedIn && currentRole === "admin" ? renderOperationHub() : renderDashboard())}
+          {currentPage === "Restock" && renderRestockPage()}
+          {currentPage === "Sales" && renderSalesPage()}
+          {currentPage === "Document Scanning" && renderScanPage()}
+          {currentPage === "Operation Hub" && renderOperationHub()}
         </main>
       </div>
   
@@ -3638,13 +3658,15 @@ async function deleteUser(id) {
                       label="Stock"
                       value={`${selectedItem.stock}/${selectedItem.capacity}`}
                     />
+                    <SummaryCard label="Location" value={selectedItem.location || "—"} />
+                    <SummaryCard label="Status" value={selectedItem.status || "—"} />
                   </div>
                 </div>
               </div>
   
               <div className="rounded-3xl border border-slate-200 p-4 text-center">
                 <QRCodeSVG
-                  value={window.location.origin + window.location.pathname + "#item=" + encodeURIComponent(selectedItem.id)}
+                  value={window.location.origin + window.location.pathname + "#item=" + encodeURIComponent(selectedItem.id) + "&view=details"}
                   size={140}
                 />
               </div>
@@ -3777,10 +3799,19 @@ async function deleteUser(id) {
                   onClick={() => setRestockOpen(false)}
                 >
                   Cancel
-                </AppButton>
-                <AppButton className="h-12" disabled={!permissions.canEditStock}>
-                  Save Adjustment
-                </AppButton>
+                  </AppButton>
+
+                  <AppButton
+                     type="submit"
+                      className="h-12 w-full"
+                      onClick={!permissions.canEditStock || restockSaveStatus === "restocking"}
+                        >
+                      {restockSaveStatus === "restocking"
+                    ? "Saving..."
+                    : restockSaveStatus === "saved"
+                     ? "Saved ✓"
+                   : "Save Adjustment"}
+              </AppButton>
               </div>
             </form>
           </div>
@@ -3953,11 +3984,29 @@ async function deleteUser(id) {
               <SummaryCard label="Name" value={currentUser?.name || "Not logged in"} />
               <SummaryCard label="Username" value={currentUser?.username || currentUser?.email || "View-only mode"} />
               <SummaryCard label="Role" value={isLoggedIn ? roles[currentRole]?.label || currentRole : "View Only"} />
-              <SummaryCard label="Access" value={isLoggedIn ? "Editing enabled based on role" : "Dashboard and Inventory only"} />
+              <SummaryCard label="Access" value={isLoggedIn ? "Editing enabled based on role" : "View only; editing requires login"} />
             </div>
             <div className="mt-5 flex flex-wrap gap-3">
               {isLoggedIn ? <AppButton variant="outline" onClick={handleLogout}>Log Out</AppButton> : <AppButton onClick={() => setLoginOpen(true)}>Log In</AppButton>}
             </div>
+
+            {isLoggedIn && (
+              <form onSubmit={handleChangePassword} className="mt-6 rounded-3xl border border-slate-200 bg-slate-50 p-5 space-y-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-slate-900">Change Password</h3>
+                  <p className="text-sm text-slate-500">Update your own login password.</p>
+                </div>
+                <Field label="Current Password"><input type="password" value={passwordForm.currentPassword} onChange={(e) => setPasswordForm((prev) => ({ ...prev, currentPassword: e.target.value }))} className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none" /></Field>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Field label="New Password"><input type="password" value={passwordForm.newPassword} onChange={(e) => setPasswordForm((prev) => ({ ...prev, newPassword: e.target.value }))} className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none" /></Field>
+                  <Field label="Confirm New Password"><input type="password" value={passwordForm.confirmPassword} onChange={(e) => setPasswordForm((prev) => ({ ...prev, confirmPassword: e.target.value }))} className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none" /></Field>
+                </div>
+                {loginError && <p className="text-sm text-rose-600">{loginError}</p>}
+                <AppButton type="submit" disabled={passwordSaveStatus === "saving"} className={`h-12 ${passwordSaveStatus === "saved" ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-100" : ""}`}>
+                  {passwordSaveStatus === "saving" ? "Saving..." : passwordSaveStatus === "saved" ? "Saved ✓" : "Change Password"}
+                </AppButton>
+              </form>
+            )}
 
             <div className="mt-6 rounded-3xl border border-slate-200 bg-slate-50 p-5">
               <div className="flex flex-wrap items-center justify-between gap-3">
