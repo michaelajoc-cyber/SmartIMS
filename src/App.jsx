@@ -1694,7 +1694,7 @@ function handleScanValue(rawValue) {
     const item = deleteDialog.item;
   
     const updatedItems = items.map((item) =>
-      item.id === item.id
+      item.id === itemToDelete.id
         ? {
             ...item,
             isDeleted: true,
