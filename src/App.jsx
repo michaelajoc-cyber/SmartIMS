@@ -3466,9 +3466,11 @@ async function deleteUser(id) {
   return (
     <div className="min-h-screen bg-[#f8f8fb] text-slate-900">
       <div className="grid min-h-screen lg:grid-cols-[330px_1fr]">
-      <div className={`fixed left-0 top-0 z-40 h-full w-[320px] bg-white transition-transform duration-300 lg:translate-x-0 ${
+      <div
+  className={`${
     mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
-    }`}>
+  } fixed inset-y-0 left-0 z-30 flex w-[88vw] max-w-[330px] flex-col border-r border-slate-200 bg-white transition-transform lg:static lg:translate-x-0`}
+>
   {/* HEADER */}
   <div className="border-b border-slate-200 px-6 py-7">
     <div className="flex items-center justify-between gap-4">
