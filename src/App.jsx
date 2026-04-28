@@ -3552,7 +3552,7 @@ function handleScanValue(rawValue) {
   </div>
 
   {/* FOOTER */}
-  <div className="px-6 pb-6">
+  <div className="px-6 pb-24 sm:pb-6">
     <div className="rounded-3xl border border-slate-200 p-5">
       <div className="flex items-center gap-4">
         <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-white">
@@ -3569,7 +3569,7 @@ function handleScanValue(rawValue) {
       </div>
     </div>
 
-    <div className="mt-4">
+    <div className="mt-4 pb-24 sm:pb-6">
       {isLoggedIn ? (
         <button
           type="button"
