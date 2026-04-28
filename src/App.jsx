@@ -281,8 +281,12 @@ const emptyItemForm = {
   supplierEmail: "",
   ringSize: "—",
   description: "",
-  dateAdded: new Date().toISOString().slice(0, 10),
-  updatedAt: new Date().toISOString().slice(0, 10),
+  dateAdded: new Date().toLocaleString("sv-SE", {
+    timeZone: "Asia/Bangkok"
+  }).replace(" ", "T").slice(0, 10),
+  updatedAt: new Date().toLocaleString("sv-SE", {
+    timeZone: "Asia/Bangkok"
+  }).replace(" ", "T").slice(0, 10),
   image: "",
 };
 
@@ -590,7 +594,9 @@ export default function App() {
 
   const [restockForm, setRestockForm] = useState({
     quantity: "",
-    date: new Date().toISOString().slice(0, 10),
+    date: new Date().toLocaleString("sv-SE", {
+      timeZone: "Asia/Bangkok"
+    }).replace(" ", "T").slice(0, 10),
     reason: "",
     type: "restock",
     updatedBy: "Warehouse Staff",
@@ -936,8 +942,12 @@ export default function App() {
       stone: row.stone || row.Stone || "",
       ringSize: row.ringSize || row["Ring Size"] || "—",
       description: row.description || row.Description || "",
-      dateAdded: row.dateAdded || row["Date Added"] || new Date().toISOString().slice(0, 10),
-      updatedAt: row.updatedAt || row["Last Updated"] || new Date().toISOString(),
+      dateAdded: row.dateAdded || row["Date Added"] || new Date().toLocaleString("sv-SE", {
+        timeZone: "Asia/Bangkok"
+      }).replace(" ", "T").slice(0, 10),
+      updatedAt: row.updatedAt || row["Last Updated"] || new Date().toLocaleString("sv-SE", {
+        timeZone: "Asia/Bangkok"
+      }).replace(" ", "T"),
       isDeleted:
         String(row.isDeleted || row["Is Deleted"] || "").toLowerCase() === "true",
       deletedAt: row.deletedAt || row["Deleted At"] || "",
@@ -1059,7 +1069,9 @@ export default function App() {
     setSelectedItemId(item.id);
     setRestockForm({
       quantity: "",
-      date: new Date().toISOString().slice(0, 10),
+      date: new Date().toLocaleString("sv-SE", {
+        timeZone: "Asia/Bangkok"
+      }).replace(" ", "T").slice(0, 10),
       reason: "",
       type: "restock",
       updatedBy: currentUser?.name || currentUser?.username || currentUserEmail || "User",
@@ -1194,7 +1206,9 @@ async function pushAllToSheets(nextData = {}, extra = {}) {
       user: extra.user || null,
       sale: extra.sale || null,
       log: extra.log || null,
-      timestamp: new Date().toISOString(),
+      timestamp: new Date().toLocaleString("sv-SE", {
+        timeZone: "Asia/Bangkok"
+      }).replace(" ", "T"),
     });
 
     const time = new Date().toLocaleTimeString();
@@ -1227,8 +1241,12 @@ async function saveItem(e) {
     stock: Number(itemForm.stock || 0),
     minStock: Number(itemForm.minStock || 0),
     capacity: Number(itemForm.capacity || 0),
-    dateAdded: itemForm.dateAdded || new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    dateAdded: itemForm.dateAdded || new Date().toLocaleString("sv-SE", {
+      timeZone: "Asia/Bangkok"
+    }).replace(" ", "T"),
+    updatedAt: new Date().toLocaleString("sv-SE", {
+      timeZone: "Asia/Bangkok"
+    }).replace(" ", "T"),
     isDeleted: false,
     deletedAt: "",
     deletedBy: "",
@@ -1296,7 +1314,9 @@ async function saveRestock(e) {
       ? {
           ...item,
           stock: newQty,
-          updatedAt: new Date().toISOString(),
+          updatedAt: new Date().toLocaleString("sv-SE", {
+            timeZone: "Asia/Bangkok"
+          }).replace(" ", "T"),
         }
       : item
   );
@@ -1315,7 +1335,9 @@ async function saveRestock(e) {
   currentUser?.username ||
   currentUserEmail ||
   "Admin",
-    timestamp: new Date().toISOString(),
+    timestamp: new Date().toLocaleString("sv-SE", {
+      timeZone: "Asia/Bangkok"
+    }).replace(" ", "T"),
   };
 
   const updatedLogs = [logEntry, ...logs];
@@ -1369,7 +1391,9 @@ async function saveSale(e) {
       ? {
           ...x,
           stock: Math.max(0, Number(x.stock || 0) - qty),
-          updatedAt: new Date().toISOString(),
+          updatedAt: new Date().toLocaleString("sv-SE", {
+            timeZone: "Asia/Bangkok"
+          }).replace(" ", "T"),
         }
       : x
   );
@@ -1388,7 +1412,9 @@ async function saveSale(e) {
       saleForm.soldBy ||
       "User",
     customer: saleForm.customer || "Walk-in Customer",
-    timestamp: new Date().toISOString(),
+    timestamp: new Date().toLocaleString("sv-SE", {
+      timeZone: "Asia/Bangkok"
+    }).replace(" ", "T"),
   };
 
   const logEntry = {
@@ -1523,7 +1549,9 @@ async function toggleUserActive(id) {
   if (!permissions.canManageUsers) return;
 
   const updatedUsers = users.map((u) =>
-    u.id === id ? { ...u, active: !u.active, updatedAt: new Date().toISOString() } : u
+    u.id === id ? { ...u, active: !u.active, updatedAt: new Date().toLocaleString("sv-SE", {
+      timeZone: "Asia/Bangkok"
+    }).replace(" ", "T") } : u
   );
 
   setUsers(updatedUsers);
@@ -1547,7 +1575,9 @@ async function deleteUser(id) {
   }
 
   const updatedUsers = users.map((u) =>
-    u.id === id ? { ...u, active: false, isDeleted: true, deletedAt: new Date().toISOString() } : u
+    u.id === id ? { ...u, active: false, isDeleted: true, deletedAt: new Date().toLocaleString("sv-SE", {
+      timeZone: "Asia/Bangkok"
+    }).replace(" ", "T") } : u
   );
   setUsers(updatedUsers);
   await pushAllToSheets(
@@ -1643,7 +1673,9 @@ async function deleteUser(id) {
         ? {
             ...row,
             isDeleted: true,
-            deletedAt: new Date().toISOString(),
+            deletedAt: new Date().toLocaleString("sv-SE", {
+              timeZone: "Asia/Bangkok"
+            }).replace(" ", "T"),
             deletedBy: currentUser?.name || currentUserEmail || "Admin",
             deleteReason: reason,
           }
@@ -1660,7 +1692,9 @@ async function deleteUser(id) {
       reason: `Deleted item - ${reason}`,
       type: "delete",
       updatedBy: currentUser?.name || currentUserEmail || "Admin",
-      timestamp: new Date().toISOString(),
+      timestamp: new Date().toLocaleString("sv-SE", {
+        timeZone: "Asia/Bangkok"
+      }).replace(" ", "T"),
     };
   
     const updatedLogs = [deleteLog, ...logs];
@@ -1681,7 +1715,9 @@ async function deleteUser(id) {
       item: {
         ...item,
         isDeleted: true,
-        deletedAt: new Date().toISOString(),
+        deletedAt: new Date().toLocaleString("sv-SE", {
+          timeZone: "Asia/Bangkok"
+        }).replace(" ", "T"),
         deletedBy: currentUser?.name || currentUserEmail || "Admin",
         deleteReason: reason,
       },
@@ -1736,7 +1772,9 @@ async function deleteUser(id) {
       reason: `Undo delete: ${restoredItem.name}`,
       type: "undo_delete",
       updatedBy: currentUser?.name || currentUserEmail || "Admin",
-      timestamp: new Date().toISOString(),
+      timestamp: new Date().toLocaleString("sv-SE", {
+        timeZone: "Asia/Bangkok"
+      }).replace(" ", "T"),
     };
   
     const updatedLogs = [undoLog, ...logs];
@@ -1856,7 +1894,9 @@ async function deleteUser(id) {
 
     const updatedUsers = users.map((u) =>
       String(u.id) === String(currentUser.id)
-        ? { ...u, password: passwordForm.newPassword, updatedAt: new Date().toISOString() }
+        ? { ...u, password: passwordForm.newPassword, updatedAt: new Date().toLocaleString("sv-SE", {
+          timeZone: "Asia/Bangkok"
+        }).replace(" ", "T") }
         : u
     );
 
@@ -2737,7 +2777,9 @@ async function deleteUser(id) {
       id: Date.now(),
       ...operationForm,
       amount: Number(operationForm.amount || 0),
-      createdAt: new Date().toISOString(),
+      createdAt: new Date().toLocaleString("sv-SE", {
+        timeZone: "Asia/Bangkok"
+      }).replace(" ", "T"),
       createdBy: currentUser?.name || "Admin",
     };
     const updatedOrders = [entry, ...operationOrders];
