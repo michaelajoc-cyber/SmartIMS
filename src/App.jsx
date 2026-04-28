@@ -39,7 +39,7 @@ import {
 } from "lucide-react";
 
 const GOOGLE_SCRIPT_URL =
-  "hhttps://script.google.com/macros/s/AKfycbyDZVebjNSfysdCXPwOK9MZZVf68uNSaTOt3vu8aMBxuEouWiD1Hgv1enJy_jo9017lEQ/exec";
+  "https://script.google.com/macros/s/AKfycbyDZVebjNSfysdCXPwOK9MZZVf68uNSaTOt3vu8aMBxuEouWiD1Hgv1enJy_jo9017lEQ/exec";
 
 const initialItems = [
   {
@@ -3417,68 +3417,6 @@ async function deleteUser(id) {
     const hasUsers = users.some(
       (u) => !u.isDeleted && u.username && u.password
     );
-
-  if (needsFirstAdminSetup) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4 text-slate-900">
-        <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="mb-6 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-violet-100 text-violet-700">
-              <Gem className="h-8 w-8" />
-            </div>
-            <h1 className="text-2xl font-semibold text-slate-900">
-              Create First Admin Account
-            </h1>
-            <p className="mt-2 text-sm text-slate-500">
-              Set up the first admin account before using the system.
-            </p>
-          </div>
-
-          <form onSubmit={handleCreateAdmin} className="space-y-4">
-            <Field label="Name">
-              <input
-                value={setupForm.name}
-                onChange={(e) =>
-                  setSetupForm((prev) => ({ ...prev, name: e.target.value }))
-                }
-                className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none"
-                placeholder="Admin name"
-              />
-            </Field>
-
-            <Field label="Username">
-              <input
-                value={setupForm.email}
-                onChange={(e) =>
-                  setSetupForm((prev) => ({ ...prev, email: e.target.value }))
-                }
-                className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none"
-                placeholder="Example: admin"
-              />
-            </Field>
-
-            <Field label="Password">
-              <input
-                type="password"
-                value={setupForm.password}
-                onChange={(e) =>
-                  setSetupForm((prev) => ({ ...prev, password: e.target.value }))
-                }
-                className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none"
-                placeholder="Create password"
-              />
-            </Field>
-
-            {loginError && <p className="text-sm text-rose-600">{loginError}</p>}
-
-            <AppButton type="submit" className="h-12 w-full">
-              Create Admin Account
-            </AppButton>
-          </form>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-[#f8f8fb] text-slate-900">
