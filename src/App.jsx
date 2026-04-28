@@ -40,9 +40,7 @@ import {
 
 const GOOGLE_SCRIPT_URL =
   "https://script.google.com/macros/s/AKfycbx9D0T7Yz2oELhaD5k607MCgcxGfG6G4qzfQUQzxR3TK82als1J-8zqcxY7LGYMhXt4IA/exec";
-
-  const [items, setItems] = useState(savedData?.items || []);
-
+  
 
 const categories = [
   "All",
@@ -362,7 +360,6 @@ function Field({ label, children }) {
   );
 }
 
-export default function App() {
   const [currentPage, setCurrentPage] = useState("Dashboard");
   const [activeDashboardMetric, setActiveDashboardMetric] = useState("Inventory Value");
   const savedData = useMemo(() => {
@@ -391,7 +388,10 @@ export default function App() {
 
     return cleanedData;
   }, []);
+export default function App() {
 
+const savedData = 
+  JSON.parse(localStorage.getItem("jewelryIMSData")) || {};
   const [items, setItems] = useState(savedData?.items || []);
   const [logs, setLogs] = useState(savedData?.logs?.length ? savedData.logs : initialLogs);
   const [users, setUsers] = useState(savedData?.users?.length ? savedData.users : []);
