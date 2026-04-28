@@ -956,29 +956,38 @@ export default function App() {
   }
 
   function mergeSheetItemsPreservingLocalImages(prevItems, sheetRows) {
-    const normalizedRows = sheetRows
-      .map(normalizeSheetItem)
-      .filter((item) => item.id);
-  
+    const normalizedRows = sheetRows.map(normalizeSheetItem).filter((item) => item.id);
+    const sheetIds = new Set(normalizedRows.map((item) => String(item.id)));
+    const deletedSheetIds = new Set(
+      normalizedRows
+        .filter((item) => item.isDeleted === true || item.isDeleted === "true")
+        .map((item) => String(item.id))
+    );
+
+    const localOnlyItems = prevItems.filter(
+      (item) =>
+        item.id &&
+        !sheetIds.has(String(item.id)) &&
+        !deletedSheetIds.has(String(item.id)) &&
+        item.isDeleted !== true &&
+        item.isDeleted !== "true"
+    );
+
     const visibleSheetItems = normalizedRows
-      .filter(
-        (item) =>
-          item.isDeleted !== true &&
-          item.isDeleted !== "true"
-      )
+      .filter((sheetItem) => !deletedSheetIds.has(String(sheetItem.id)))
       .map((sheetItem) => {
-        const localItem = prevItems.find(
-          (item) => String(item.id) === String(sheetItem.id)
-        );
-  
+        const localItem = prevItems.find((item) => String(item.id) === String(sheetItem.id));
         return {
+          ...localItem,
           ...sheetItem,
           image: sheetItem.image || localItem?.image || "",
         };
-      });
-  
-    return visibleSheetItems;
+      })
+      .filter((item) => item.isDeleted !== true && item.isDeleted !== "true");
+
+    return [...localOnlyItems, ...visibleSheetItems];
   }
+
   async function loadItemsFromSheet() {
     try {
       const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=getAllData`);
