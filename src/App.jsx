@@ -775,6 +775,18 @@ export default function App() {
       stopScanner();
     };
   }, []);
+  useEffect(() => {
+    if (currentPage !== "Document Scanning") return;
+  
+    const timer = setTimeout(() => {
+      startScanner();
+    }, 500);
+  
+    return () => {
+      clearTimeout(timer);
+      stopScanner?.();
+    };
+  }, [currentPage]);
 
   useEffect(() => {
     const cleanedUsers = cleanUsersForLogin(users);
