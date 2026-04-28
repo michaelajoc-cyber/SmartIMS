@@ -1442,9 +1442,8 @@ async function saveUser(e) {
   e.preventDefault();
   setUserSaveStatus("saving");
 
-  const hasExistingUsers = activeUsers.filter((u) => u.active !== false).length > 0;
-  const isAdminCreatingStaff = isLoggedIn && permissions.canManageUsers;
-  const isFirstAccount = !hasExistingUsers;
+  const hasExistingUsers = true;
+const needsFirstAdminSetup = false;
 
   if (!isAdminCreatingStaff && !isFirstAccount) {
     setUserSaveStatus("idle");
