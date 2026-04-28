@@ -2135,15 +2135,24 @@ function handleScanValue(rawValue) {
     <div className={`grid gap-6 ${selectedItem ? "xl:grid-cols-[1fr_480px]" : "grid-cols-1"}`}>
       <div className="min-w-0">
         <div className="border-b border-slate-200 px-4 pb-5 pt-4 sm:px-6 sm:pt-6">
-          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-            <div>
-              <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
-                Inventory
-              </h1>
-              <p className="mt-1 text-lg text-slate-500 sm:text-xl">
-                {filteredItems.length} of {enrichedItems.length} items
-              </p>
-            </div>
+        <div className="flex items-start gap-3">
+  <button
+    onClick={() => setMobileMenuOpen(true)}
+    className="rounded-2xl border border-slate-200 p-3 text-slate-600 lg:hidden"
+  >
+    <Menu className="h-5 w-5" />
+  </button>
+
+  <div>
+    <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
+      Inventory
+    </h1>
+
+    <p className="mt-1 text-lg text-slate-500 sm:text-xl">
+      {filteredItems.length} of {enrichedItems.length} items
+    </p>
+  </div>
+</div>
 
             <div className="flex flex-wrap items-center gap-3">
               <AppButton
