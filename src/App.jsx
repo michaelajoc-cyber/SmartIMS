@@ -219,7 +219,6 @@ const navItems = [
   { key: "Sales", icon: ShoppingCart },
   { key: "Document Scanning", icon: ScanLine },
   { key: "Operation Hub", icon: ClipboardList },
-  { key: "Settings", icon: Settings },
 ];
 
 const roles = {
