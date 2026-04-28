@@ -3580,12 +3580,19 @@ function handleScanValue(rawValue) {
         </button>
       ) : (
         <button
-          type="button"
-          onClick={() => setLoginOpen(true)}
-          className="flex w-full items-center justify-center rounded-2xl bg-violet-600 px-4 py-3 text-white hover:bg-violet-700"
-        >
-          Log In
-        </button>
+  type="button"
+  onClick={(e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setMobileMenuOpen(false);
+    setTimeout(() => {
+      setLoginOpen(true);
+    }, 150);
+  }}
+  className="flex w-full items-center justify-center rounded-2xl bg-violet-600 px-4 py-3 text-white"
+>
+  Log In
+</button>
       )}
     </div>
 
