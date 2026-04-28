@@ -39,7 +39,7 @@ import {
 } from "lucide-react";
 
 const GOOGLE_SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycbyDZVebjNSfysdCXPwOK9MZZVf68uNSaTOt3vu8aMBxuEouWiD1Hgv1enJy_jo9017lEQ/exec";
+  "https://script.google.com/macros/s/AKfycbx9D0T7Yz2oELhaD5k607MCgcxGfG6G4qzfQUQzxR3TK82als1J-8zqcxY7LGYMhXt4IA/exec";
 
 const initialItems = [
   {
