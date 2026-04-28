@@ -1441,78 +1441,83 @@ async function saveSale(e) {
 async function saveUser(e) {
   e.preventDefault();
   setUserSaveStatus("saving");
-
-  const hasExistingUsers = true;
-const needsFirstAdminSetup = false;
-
-  if (!isAdminCreatingStaff && !isFirstAccount) {
-    setUserSaveStatus("idle");
-    setLoginError("Only an Admin can create staff login accounts.");
-    return;
-  }
-
-  const cleanUsername = String(userForm.username || userForm.email || "").trim();
-  if (!userForm.name.trim() || !cleanUsername || !userForm.password.trim()) {
-    setUserSaveStatus("idle");
-    setLoginError("Please complete the name, username, and password.");
-    return;
-  }
-
-  const usernameExists = users.some(
-    (user) =>
-      !user.isDeleted &&
-      String(user.username || user.email || "").toLowerCase() === cleanUsername.toLowerCase()
-  );
-
-  if (usernameExists && !userForm.id) {
-    setUserSaveStatus("idle");
-    setLoginError("This username already has an account.");
-    return;
-  }
-
-  const newUser = {
-    ...userForm,
-    id: userForm.id || Date.now(),
-    name: userForm.name.trim(),
-    username: cleanUsername,
-    email: cleanUsername,
-    password: userForm.password.trim(),
-    role: isFirstAccount ? "admin" : "warehouse",
-    active: true,
-    isDeleted: false,
-  };
-
-  const updatedUsers = users.some((user) => user.id === newUser.id)
-    ? users.map((user) => (user.id === newUser.id ? { ...user, ...newUser } : user))
-    : [...users, newUser];
-
-  setUsers(updatedUsers);
-  if (isFirstAccount) {
-    setCurrentUserEmail(newUser.username || newUser.email);
-    setCurrentRole(newUser.role);
-    setIsLoggedIn(true);
-    setLoginOpen(false);
-  }
   setLoginError("");
-  setUserForm(emptyUserForm);
-  setUserFormOpen(false);
 
-  await pushAllToSheets(
-    {
+  try {
+    const hasExistingUsers = activeUsers.filter((u) => u.active !== false).length > 0;
+    const isAdminCreatingStaff = isLoggedIn && permissions.canManageUsers;
+    const isFirstAccount = !hasExistingUsers;
+
+    if (!isAdminCreatingStaff && !isFirstAccount) {
+      setLoginError("Only an Admin can create staff login accounts.");
+      setUserSaveStatus("idle");
+      return;
+    }
+
+    const cleanUsername = String(userForm.username || userForm.email || "").trim();
+
+    if (!userForm.name.trim() || !cleanUsername || !userForm.password.trim()) {
+      setLoginError("Please complete the name, username, and password.");
+      setUserSaveStatus("idle");
+      return;
+    }
+
+    const usernameExists = users.some(
+      (user) =>
+        !user.isDeleted &&
+        String(user.username || user.email || "").toLowerCase() === cleanUsername.toLowerCase()
+    );
+
+    if (usernameExists && !userForm.id) {
+      setLoginError("This username already has an account.");
+      setUserSaveStatus("idle");
+      return;
+    }
+
+    const newUser = {
+      ...userForm,
+      id: userForm.id || Date.now(),
+      name: userForm.name.trim(),
+      username: cleanUsername,
+      email: cleanUsername,
+      password: userForm.password.trim(),
+      role: isFirstAccount ? "admin" : "warehouse",
+      active: true,
+      isDeleted: false,
+    };
+
+    const updatedUsers = users.some((user) => user.id === newUser.id)
+      ? users.map((user) => (user.id === newUser.id ? { ...user, ...newUser } : user))
+      : [...users, newUser];
+
+    setUsers(updatedUsers);
+
+    persistAll({
+      users: updatedUsers,
+    });
+
+    await pushAllToSheets({
       items,
       logs,
       users: updatedUsers,
       sales,
       operationOrders,
-    },
-    { action: "SAVE_USER", user: newUser }
-  );
+    });
 
-  setUserSaveStatus("saved");
-  setTimeout(() => setUserSaveStatus("idle"), 1600);
+    setUserForm(emptyUserForm);
+    setUserFormOpen(false);
+    setLoginError("");
+    setUserSaveStatus("saved");
+
+    setTimeout(() => {
+      setUserSaveStatus("idle");
+    }, 1200);
+  } catch (error) {
+    console.error("Save user failed:", error);
+    setLoginError("User was saved locally, but Google Sheet sync failed. Please check Apps Script.");
+    setUserSaveStatus("idle");
+  }
 }
-
-
 
 async function toggleUserActive(id) {
   if (!permissions.canManageUsers) return;
