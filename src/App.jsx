@@ -1599,35 +1599,49 @@ async function deleteUser(id) {
 
 
 
-  function handleScanValue(rawValue) {
-    if (!rawValue) return;
+function handleScanValue(rawValue) {
+  if (!rawValue) return;
 
-    let sku = rawValue;
-    try {
-      const parsed = JSON.parse(rawValue);
-      if (parsed.sku) sku = parsed.sku;
-      else if (parsed.id) sku = parsed.id;
-      else if (parsed.barcode) sku = parsed.barcode;
-    } catch {}
+  const cleanValue = String(rawValue).trim().toLowerCase();
 
-    const found = enrichedItems.find(
-      (item) =>
-        item.id?.toLowerCase() === String(sku).toLowerCase() ||
-        String(item.barcode || "") === String(sku)
+  let extractedValue = cleanValue;
+
+  try {
+    const parsed = JSON.parse(rawValue);
+    extractedValue = String(
+      parsed.sku || parsed.id || parsed.barcode || rawValue
+    )
+      .trim()
+      .toLowerCase();
+  } catch {}
+
+  const found = enrichedItems.find((item) => {
+    const values = [
+      item.id,
+      item.sku,
+      item.barcode,
+      item.name,
+    ].map((v) => String(v || "").trim().toLowerCase());
+
+    return values.some(
+      (v) =>
+        v &&
+        (v === extractedValue ||
+          cleanValue.includes(v) ||
+          extractedValue.includes(v))
     );
+  });
 
-    if (found) {
-      setSelectedItemId(found.id);
-      setScannerStatus(`Matched item: ${found.id}`);
-      setCurrentPage("Inventory");
-      setMobileDetailsOpen(true);
-      setTimeout(() => {
-        document.getElementById(`item-row-${found.id}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
-      }, 250);
-    } else {
-      setScannerStatus("No matching item found");
-    }
+  if (found) {
+    setSelectedItemId(found.id);
+    setScannerStatus(`Matched item: ${found.id}`);
+    setCurrentPage("Inventory");
+    setMobileDetailsOpen(true);
+    setTimeout(() => stopScanner(), 300);
+  } else {
+    setScannerStatus(`No matching item found: ${rawValue}`);
   }
+}
 
   async function startScanner() {
     try {
