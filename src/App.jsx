@@ -1693,18 +1693,18 @@ function handleScanValue(rawValue) {
   
     const item = deleteDialog.item;
   
-    const updatedItems = items.map((row) =>
-      row.id === item.id
+    const updatedItems = items.map((item) =>
+      item.id === item.id
         ? {
-            ...row,
+            ...item,
             isDeleted: true,
             deletedAt: new Date().toLocaleString("sv-SE", {
               timeZone: "Asia/Bangkok"
             }).replace(" ", "T"),
             deletedBy: currentUser?.name || currentUserEmail || "Admin",
-            deleteReason: reason,
+            deleteReason: reason || "Deleted item"
           }
-        : row
+        : item
     );
   
     const deleteLog = {
