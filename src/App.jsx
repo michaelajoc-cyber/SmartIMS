@@ -1746,6 +1746,10 @@ function handleScanValue(rawValue) {
     item: null,
     reason: "",
   });
+  setUndoDelete({
+    open: true,
+    item: itemToDelete,
+  });
 
   persistAll({
     items: updatedItems,
@@ -3868,6 +3872,7 @@ function handleScanValue(rawValue) {
                 value={deleteDialog.reason}
                 onChange={(e) =>
                   setDeleteDialog({ ...deleteDialog, reason: e.target.value })
+                  
                 }
                 className="mt-2 w-full rounded-xl border border-slate-300 p-3 text-sm outline-none"
                 rows={3}
