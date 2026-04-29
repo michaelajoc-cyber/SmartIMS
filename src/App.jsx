@@ -2696,7 +2696,7 @@ function handleScanValue(rawValue) {
               Recent Sales</h2>
 
               <div className="absolute bottom-2 right-15">
-    <div className="rounded-2xl bg-slate-5 px-50 py-2 text-sm text-slate-600 shadow-sm">
+    <div className="rounded-2xl bg-slate-5 px-5 py-2 text-sm text-slate-600 shadow-sm">
       Total:{" "}
       <span className="font-semibold text-slate-900">
         {formatCurrency(totalSalesValue)}
@@ -3713,7 +3713,7 @@ function handleScanValue(rawValue) {
                   <h4 className="text-xl font-semibold text-slate-900">
                     Restock History</h4>
 
-                  <div className="space-y-3">
+                    <div className="max-h-[380px] overflow-y-auto">
                     {itemLogs.length === 0 && (
                       <p className="text-sm text-slate-500">No history yet.</p>
                     )}
