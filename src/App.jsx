@@ -2384,7 +2384,7 @@ function handleScanValue(rawValue) {
             </button>
           </div>
 
-          <div className="mt-6 flex justify-center">
+          <div className="mt-4 flex justify-center">
             <div className="h-[160px] w-[160px] overflow-hidden rounded-2xl border border-slate-300">
               {selectedItem.image ? (
                 <img
@@ -2410,12 +2410,12 @@ function handleScanValue(rawValue) {
             </div>
           </div>
 
-          <div className="mt-6 flex items-center justify-between gap-4">
+          <div className="mt-4 flex items-center justify-between gap-4">
             <h3 className="text-2xl font-semibold text-slate-900">{selectedItem.name}</h3>
             <StatusBadge status={selectedItem.status} />
           </div>
 
-          <div className="mt-6 grid grid-cols-2 gap-4">
+          <div className="mt-6 grid grid-cols-2 gap-4 mb-3">
             <SummaryCard label="SKU" value={selectedItem.id} />
             <SummaryCard label="Name" value={selectedItem.name} />
             <SummaryCard label="Price" value={formatCurrency(selectedItem.price)} />
@@ -3713,8 +3713,6 @@ function handleScanValue(rawValue) {
   
               {permissions.canViewLogs && (
                  <div className="mt-4">
-                 
-              s
                   <h4 className="text-xl font-semibold text-slate-900">
                     Restock History</h4>
 
@@ -3723,7 +3721,7 @@ function handleScanValue(rawValue) {
                       <p className="text-sm text-slate-500">No history yet.</p>
                     )}
                     {itemLogs.slice(0, 5).map((log) => (
-                      <div key={log.id} className="rounded-2xl border border-slate-200 p-3">
+                      <div key={log.id} className="rounded-2xl border border-slate-200 p-4 mb-3">
                         <p className="font-medium text-slate-900">{log.reason}</p>
                         <p className="mt-1 text-sm text-slate-500">
                           {log.timestamp} • {log.updatedBy}
