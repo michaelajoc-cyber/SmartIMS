@@ -2425,7 +2425,7 @@ function handleScanValue(rawValue) {
           </div>
 
           {permissions.canViewLogs && (
-            <div className="relative h-[420px] overflow-hidden rounded-[28px] border border-slate-300 bg-white p-6">
+            <div className="relative h-[420px] overflow-hidden rounded-[28px] border border-slate-300 bg-white p-5">
               <div className="text-xl font-semibold text-slate-900">
                 Restock History
                 </div>
@@ -2434,7 +2434,7 @@ function handleScanValue(rawValue) {
                   <p className="text-sm text-slate-500">No history yet.</p>
                 )}
                 {itemLogs.map((log) => (
-                  <div key={log.id} className="rounded-2xl border border-slate-200 p-4">
+                  <div key={log.id} className="rounded-2xl border border-slate-200 p-4 mb-3">
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <p className="font-medium text-slate-900">{log.reason}</p>
@@ -2696,10 +2696,10 @@ function handleScanValue(rawValue) {
               Recent Sales</h2>
 
               <div className="absolute bottom-2 right-15">
-    <div className="rounded-2xl bg-slate-5 px-5 py-2 text-sm text-slate-600 shadow-sm">
-      Total:{" "}
-      <span className="font-semibold text-slate-900">
-        {formatCurrency(totalSalesValue)}
+              <div className="rounded-2xl bg-slate-5 px-5 py-2 text-sm text-slate-600 shadow-sm">
+                Total:{" "}
+              <span className="font-semibold text-slate-900">
+          {formatCurrency(totalSalesValue)}
       </span>
     </div>
   </div>
@@ -2709,7 +2709,7 @@ function handleScanValue(rawValue) {
               <p className="text-sm text-slate-500">No sales recorded yet.</p>
             )}
             {sales.map((sale) => (
-              <div key={sale.id} className="rounded-2xl border border-slate-200 p-4">
+              <div key={sale.id} className="rounded-2xl border border-slate-200 p-4 mb-3">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="font-medium text-slate-900">{sale.itemName}</p>
@@ -3574,7 +3574,7 @@ function handleScanValue(rawValue) {
 
   {/* FOOTER */}
   <div className="px-6 pb-32 sm:pb-6">
-    <div className="rounded-3xl border border-slate-200 p-5">
+    <div className="rounded-3xl border border-slate-200 p-4">
       <div className="flex items-center gap-4">
         <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-white">
           {currentUser?.name?.[0] || "A"}
@@ -3700,16 +3700,21 @@ function handleScanValue(rawValue) {
                 </div>
               </div>
   
-              <div className="rounded-3xl border border-slate-200 p-4 text-center">
+              <div className="mt-6 flex items-center justify-between gap-4">
+              <div className="flex h-[190px] w-[190px] flex-col items-center justify-center rounded-2xl border border-slate-200 bg-white shadow-sm">
                 <QRCodeSVG
                   value={window.location.origin + window.location.pathname + "#item=" + encodeURIComponent(selectedItem.id) + "&view=details"}
                   size={140}
-                />
+                  />
+                 <p className="mt-2 text-xs text-slate-600">
+                </p>
               </div>
+             </div>
   
               {permissions.canViewLogs && (
-                 <div classname="fixed right-6 top-6 z-10 hidden h-[calc(100vh-48px)] w-[420px] overflow-y-auto rounded-[28px] border border-slate-200 bg-white p-6 shadow-2xl xl:block">          
-                  <div className="flex items-center justify-between">
+                 <div className="mt-4">
+                 
+              s
                   <h4 className="text-xl font-semibold text-slate-900">
                     Restock History</h4>
 
@@ -3727,7 +3732,7 @@ function handleScanValue(rawValue) {
                     ))}
                   </div>
                 </div>
-              </div>
+            
               )}
   
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
