@@ -1106,6 +1106,7 @@ export default function App() {
       ...item,
       price: String(item.price ?? ""),
       stock: String(item.stock ?? ""),
+      originalStock: Number(item.stock ?? 0),
       minStock: String(item.minStock ?? ""),
       capacity: String(item.capacity ?? ""),
     });
