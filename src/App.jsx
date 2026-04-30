@@ -1273,8 +1273,36 @@ async function saveItem(e) {
       : items.map((item) =>
           item.id === normalized.id ? normalized : item
         );
+        const oldItem = items.find(
+          (item) => String(item.id) === String(normalized.id)
+        );
+        
+        const editLog =
+          itemFormMode === "edit"
+            ? {
+                id: Date.now(),
+                sku: normalized.id,
+                itemName: normalized.name,
+                previousQty: oldItem?.stock || normalized.stock,
+                change: 0,
+                newQty: normalized.stock,
+                reason: "Item edited",
+                type: "edit",
+                updatedBy:
+                  currentUser?.name ||
+                  currentUser?.username ||
+                  currentUserEmail ||
+                  "Admin",
+                timestamp: new Date()
+                  .toLocaleString("sv-SE", { timeZone: "Asia/Bangkok" })
+                  .replace(" ", "T"),
+              }
+            : null;
+        
+        const updatedLogs = editLog ? [editLog, ...logs] : logs;
 
   setItems(updatedItems);
+  setLogs(updatedLogs);
   setSelectedItemId(normalized.id);
 
 
@@ -3413,12 +3441,12 @@ function handleScanValue(rawValue) {
             Scan to view full item details
           </p>
   
-          <div className="mt-6 flex justify-center">
+          <div className="mt-4 flex justify-center">
             <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
               <QRCodeSVG 
               id="qr-download-svg"
               value={window.location.origin + window.location.pathname + "#item=" + encodeURIComponent(qrModalItem.id) + "&view=details"} 
-              size={160} />
+              size={120} />
               
             </div>
           </div>
@@ -3700,11 +3728,11 @@ function handleScanValue(rawValue) {
                 </div>
               </div>
   
-              <div className="mt-6 flex items-center justify-between gap-4">
+              <div className="mt-4 flex items-center justify-between gap-4">
               <div className="flex h-[190px] w-[190px] flex-col items-center justify-center rounded-2xl border border-slate-200 bg-white shadow-sm">
                 <QRCodeSVG
                   value={window.location.origin + window.location.pathname + "#item=" + encodeURIComponent(selectedItem.id) + "&view=details"}
-                  size={140}
+                  size={120}
                   />
                  <p className="mt-2 text-xs text-slate-600">
                 </p>
