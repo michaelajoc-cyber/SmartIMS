@@ -1309,7 +1309,7 @@ async function saveItem(e) {
   await pushAllToSheets(
     {
       items: updatedItems,
-      logs,
+      logs: updatedLogs,
       users,
       sales,
       operationOrders,
