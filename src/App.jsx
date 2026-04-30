@@ -1278,14 +1278,14 @@ async function saveItem(e) {
   const editLog =
     itemFormMode === "edit"
       ? {
-          id: Date.now(),
-          sku: normalized.id,
-          itemName: normalized.name,
-          previousQty: Number(oldItem?.stock || 0),
-          change: Number(normalized.stock || 0) - Number(oldItem?.stock || 0),
-          newQty: Number(normalized.stock || 0),
-          reason: "Item edited",
-          type: "edit",
+        id: Date.now(),
+        sku: itemForm.id,
+        itemName: itemForm.name,
+        previousQty: oldStock,
+        change: newStock - oldStock,
+        newQty: newStock,
+        reason: "Item edited",
+        type: "edit",
           updatedBy: currentUser?.name || currentUserEmail || "Admin",
           timestamp: new Date()
             .toLocaleString("sv-SE", { timeZone: "Asia/Bangkok" })
