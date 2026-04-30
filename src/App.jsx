@@ -1253,7 +1253,7 @@ async function saveItem(e) {
  const oldItem = items.find(
   (item) => String(item.id) === String(itemForm.id)
 );
-
+const oldStock = Number(oldItem?.stock ?? 0);
 const normalized = {
   ...itemForm,
   price: Number(itemForm.price || 0),
