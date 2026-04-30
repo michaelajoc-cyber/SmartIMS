@@ -1249,57 +1249,51 @@ async function saveItem(e) {
   if (!permissions.canCreateItem && itemFormMode === "add") return;
   if (!permissions.canEditItem && itemFormMode === "edit") return;
 
+  const oldItem = items.find(
+    (item) => String(item.id) === String(itemForm.id)
+  );
+  
   const normalized = {
     ...itemForm,
     price: Number(itemForm.price || 0),
     stock: Number(itemForm.stock || 0),
     minStock: Number(itemForm.minStock || 0),
     capacity: Number(itemForm.capacity || 0),
-    dateAdded: itemForm.dateAdded || new Date().toLocaleString("sv-SE", {
-      timeZone: "Asia/Bangkok"
-    }).replace(" ", "T"),
-    updatedAt: new Date().toLocaleString("sv-SE", {
-      timeZone: "Asia/Bangkok"
-    }).replace(" ", "T"),
+    updatedAt: new Date()
+      .toLocaleString("sv-SE", { timeZone: "Asia/Bangkok" })
+      .replace(" ", "T"),
     isDeleted: false,
     deletedAt: "",
     deletedBy: "",
     deleteReason: "",
   };
-
+  
   const updatedItems =
     itemFormMode === "add"
       ? [normalized, ...items]
       : items.map((item) =>
-          item.id === normalized.id ? normalized : item
+          String(item.id) === String(normalized.id) ? normalized : item
         );
-        const oldItem = items.find(
-          (item) => String(item.id) === String(normalized.id)
-        );
-        
-        const editLog =
-          itemFormMode === "edit"
-            ? {
-                id: Date.now(),
-                sku: normalized.id,
-                itemName: normalized.name,
-                previousQty: oldItem?.stock || normalized.stock,
-                change: 0,
-                newQty: normalized.stock,
-                reason: "Item edited",
-                type: "edit",
-                updatedBy:
-                  currentUser?.name ||
-                  currentUser?.username ||
-                  currentUserEmail ||
-                  "Admin",
-                timestamp: new Date()
-                  .toLocaleString("sv-SE", { timeZone: "Asia/Bangkok" })
-                  .replace(" ", "T"),
-              }
-            : null;
-        
-        const updatedLogs = editLog ? [editLog, ...logs] : logs;
+  
+  const editLog =
+    itemFormMode === "edit"
+      ? {
+          id: Date.now(),
+          sku: normalized.id,
+          itemName: normalized.name,
+          previousQty: Number(oldItem?.stock || 0),
+          change: Number(normalized.stock || 0) - Number(oldItem?.stock || 0),
+          newQty: Number(normalized.stock || 0),
+          reason: "Item edited",
+          type: "edit",
+          updatedBy: currentUser?.name || currentUserEmail || "Admin",
+          timestamp: new Date()
+            .toLocaleString("sv-SE", { timeZone: "Asia/Bangkok" })
+            .replace(" ", "T"),
+        }
+      : null;
+  
+  const updatedLogs = editLog ? [editLog, ...logs] : logs;
 
   setItems(updatedItems);
   setLogs(updatedLogs);
