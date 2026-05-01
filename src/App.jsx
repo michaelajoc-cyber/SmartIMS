@@ -443,7 +443,7 @@ function MetricCard({ title, value, subtitle, icon: Icon, onClick, active = fals
         active ? "border-violet-500 ring-2 ring-violet-100" : "border-slate-200"
       }`}
     >
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-xs text-slate-500">{title}</p>
           <p className="mt-2 text-2xl font-semibold text-slate-900">{value}</p>
@@ -550,6 +550,7 @@ export default function App() {
     return cleanedData;
   }, []);
 
+  const [salesReportView, setSalesReportView] = useState("daily");
   const [items, setItems] = useState(savedData?.items?.length ? savedData.items : initialItems);
   const [logs, setLogs] = useState(savedData?.logs?.length ? savedData.logs : initialLogs);
   const [users, setUsers] = useState(savedData?.users?.length ? savedData.users : []);
@@ -655,16 +656,16 @@ export default function App() {
   const permissions = isLoggedIn ? roles[currentRole] || viewOnlyPermissions : viewOnlyPermissions;
 
   const exchangeRates = {
-    THB: 1,
-    USD: 1 / 36,
-    EUR: 1,
-    GBP: 1,
-    SGD: 1,
-    PHP: 1,
-    JPY: 1,
-    CAD: 1,
-    AUD: 1,
-    CNY: 1,
+    THB: 1 / 1,
+    USD: 1 / 32.32,
+    EUR: 1 / 38.30,
+    GBP: 1 / 43.48, 
+    SGD: 1 / 25.15,
+    PHP: 1 / .50,
+    JPY: 1 / 20,
+    CAD: 1 / 23.54,
+    AUD: 1 / 22.90,
+    CNY: 1 / 4.69,
 
   };
 
@@ -1913,6 +1914,53 @@ function handleScanValue(rawValue) {
     setLoginForm((prev) => ({ ...prev, email: found.username || found.email, password: "" }));
     saveLocalData({ items, logs, users, sales, operationOrders, currentRole: found.role, currentUserEmail: found.username || found.email, isLoggedIn: true });
   }
+  const salesReportData = useMemo(() => {
+    const now = new Date();
+  
+    const filtered = sales.filter((sale) => {
+      const saleDate = new Date(sale.timestamp);
+  
+      if (salesReportView === "daily") {
+        return saleDate.toDateString() === now.toDateString();
+      }
+  
+      if (salesReportView === "weekly") {
+        const startOfWeek = new Date(now);
+        startOfWeek.setDate(now.getDate() - now.getDay());
+  
+        return saleDate >= startOfWeek && saleDate <= now;
+      }
+  
+      if (salesReportView === "monthly") {
+        return (
+          saleDate.getMonth() === now.getMonth() &&
+          saleDate.getFullYear() === now.getFullYear()
+        );
+      }
+  
+      return true;
+    });
+  
+    const totalSales = filtered.reduce((sum, sale) => sum + Number(sale.total || 0), 0);
+    const totalItems = filtered.reduce((sum, sale) => sum + Number(sale.quantity || 0), 0);
+    const transactions = filtered.length;
+  
+    const itemCount = {};
+    filtered.forEach((sale) => {
+      itemCount[sale.itemName] = (itemCount[sale.itemName] || 0) + Number(sale.quantity || 0);
+    });
+  
+    const topItem =
+      Object.entries(itemCount).sort((a, b) => b[1] - a[1])[0]?.[0] || "None";
+  
+    return {
+      filtered,
+      totalSales,
+      totalItems,
+      transactions,
+      topItem,
+    };
+  }, [sales, salesReportView]);
 
   async function handleChangePassword(e) {
     e.preventDefault();
@@ -2068,11 +2116,71 @@ function handleScanValue(rawValue) {
         />
       </div>
 
-      <div className="h-[320px] overflow-hidden">
+      <div className="mt-4 rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="mb-2 -mt-2 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <h2 className="text-xl font-semibold text-slate-900">
+        Sales Report
+      </h2>
+      <p className="mt-2 text-sm text-slate-500">
+        Daily, weekly, and monthly sales overview
+      </p>
+    </div>
+
+    <div className="rounded-2xl flex w-full gap-2 overflow-visible sm:w-auto sm:justify-end">
+      {["daily", "weekly", "monthly"].map((view) => (
+        <button
+          key={view}
+          type="button"
+          onClick={() => setSalesReportView(view)}
+          className={`shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 cursor-pointer ${
+            salesReportView === view
+              ? "bg-violet-600 text-white shadow-md border-0 outline-none ring-0 scale-105"
+              : "bg-slate-100 text-slate-600 hover:bg-violet-100 hover:text-violet-700 hover:-translate-y-1 hover:shadow-sm border-0"
+          }`}
+        >
+          {view.charAt(0).toUpperCase() + view.slice(1)}
+        </button>
+      ))}
+    </div>
+  </div>
+
+  <div className="grid gap-4 md:grid-cols-4">
+  <div className="rounded-2xl bg-slate-50 px-4 py-2 flex flex-col transition hover:shadow-md hover:border-violet-500 cursor-pointer">
+      <p className="text-sm text-slate-800">Total Sales</p>
+      <p className="text-2xl font-bold text-slate-900">
+        {formatCurrency(salesReportData.totalSales)}
+      </p>
+    </div>
+
+    <div className="rounded-2xl bg-slate-50 px-4 py-2 flex flex-col  transition hover:shadow-md hover:border-violet-500 cursor-pointer">
+      <p className="text-sm text-slate-800">Items Sold</p>
+      <p className="text-2xl font-bold text-slate-900">
+        {salesReportData.totalItems}
+      </p>
+    </div>
+
+    <div className="rounded-2xl bg-slate-50 px-4 py-2 flex flex-col  transition hover:shadow-md hover:border-violet-500 cursor-pointer">
+      <p className="text-sm text-slate-800">Transactions</p>
+      <p className="text-2xl font-bold text-slate-900">
+        {salesReportData.transactions}
+      </p>
+    </div>
+
+    <div className="rounded-2xl bg-slate-50 px-4 py-2 flex flex-col transition hover:shadow-md hover:border-violet-500 cursor-pointer">
+      <p className="text-sm text-slate-800">Top Item</p>
+      <p className="text-lg font-bold text-slate-900">
+        {salesReportData.topItem}
+      </p>
+    </div>
+  </div>
+</div>
+
+      <div className="h-[300px] overflow-hidden">
         <div className="sticky top-4 z-10 bg-white border-b border-slate-200">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-xl font-semibold text-slate-900">Recent Activity</h2>
-            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+            <span className="rounded-full bg-slate-100 px-4 py-2 text-xs font-semibold text-slate-600">
               Latest
               </span>
           </div>
@@ -2080,7 +2188,10 @@ function handleScanValue(rawValue) {
 
           <div className="h-[260px] overflow-y-auto pr-2 space-y-3">
             {logs.slice(0, 6).map((log) => (
-              <div key={log.id} className="rounded-2xl border border-slate-200 p-4">
+              <div
+              key={log.id}
+                className="rounded-2xl border border-slate-200 p-4 transition-all duration-200 hover:shadow-md hover:border-violet-300 hover:-translate-y-1 cursor-pointer"
+                >
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="font-medium text-slate-900">{log.itemName}</p>
@@ -2108,10 +2219,10 @@ function handleScanValue(rawValue) {
 
 
         <div className="h-[300px] overflow-hidden">
-        <div className="sticky top-2 z-10 bg-white border-b border-slate-200">
+        <div className="sticky top-1 z-10 bg-white border-b border-slate-200">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-xl font-semibold text-slate-900">Stock Overview</h2>
-            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">Live
+            <span className="rounded-full bg-slate-100 px-4 py-2 text-xs font-semibold text-slate-600">Live
 
             </span>
           </div>
@@ -2124,7 +2235,7 @@ function handleScanValue(rawValue) {
                   key={item.id}
                   type="button"
                   onClick={() => selectItem(item)}
-                  className="w-full rounded-2xl border border-slate-100 p-3 text-left hover:border-violet-300 hover:bg-violet-50"
+                  className="w-full rounded-2xl border border-slate-200 p-4 duration-200 hover:shadow-md hover:border-violet-300 hover:-translate-y-1 cursor-pointer"
                 >
                   <div className="mb-2 flex items-center justify-between gap-3 text-sm">
                     <span className="font-semibold text-slate-800">{item.name}</span>
@@ -2160,31 +2271,30 @@ function handleScanValue(rawValue) {
   );
 
   const renderInventory = () => (
-    <div className="min-w-0">
-      <div className={`min-w-0 overflow-hidden transition-all duration-300 ${selectedItem ? "xl:pr-[440px]" : ""}`}>
-        <div className="border-b border-slate-200 px-4 pb-5 pt-4 sm:px-6 sm:pt-6">
-        <div className="flex items-start justify-between w-full gap-3">
+     <div className="min-w-0 overflow-hidden transition-all duration-300"> 
+        <div className="p-4 sm:p-6 xl:p-8">
+        <div className="flex items-center justify-between gap-2">
   <button
     onClick={() => setMobileMenuOpen(true)}
-    className="rounded-2xl border border-slate-200 p-3 text-slate-600 lg:hidden"
+    className="rounded-2xl border border-slate-200 p-3 lg:hidden shrink-0"
   >
     <Menu className="h-5 w-5" />
   </button>
 
   <div>
-    <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
+    <h1 className="text-3xl font-semibold text-slate-900 sm:text-4xl">
       Inventory
     </h1>
 
-    <p className="mt-1 text-lg text-slate-500 sm:text-xl">
+    <p className="mt-1 text-slate-500">
       {filteredItems.length} of {enrichedItems.length} items
     </p>
   </div>
-</div>
 
-<div className="flex flex-wrap items-center justify-end gap-3">
+
+          <div className="flex justify-end pt-2 mb-2">
               <AppButton
-                className="h-12 px-6"
+                className="h-12 w-full px-5 shrink-0 "
                 onClick={openAddItem}
                 disabled={!permissions.canCreateItem}
               >
@@ -2194,7 +2304,8 @@ function handleScanValue(rawValue) {
             </div>
           </div>
 
-          <div className="mt-6 grid gap-4 lg:grid-cols-[1fr_auto]">
+      
+          <div className="mt-6 grid gap-3 lg:grid-cols-[1fr_auto]">
             <div className="relative">
             <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
               <input
@@ -2205,19 +2316,19 @@ function handleScanValue(rawValue) {
               />
             </div>
 
-            <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-600">
+            <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-slate-600">
               <ShieldCheck className="h-4 w-4" />
               {roles[currentRole]?.label}
             </div>
           </div>
-
-          <div className="mt-5 flex flex-wrap gap-3">
+          
+          <div className="mt-4 mb-0 flex flex-wrap gap-3">
             {categories.map((c) => (
               <button
                 key={c}
                 onClick={() => setCategory(c)}
                 className={`rounded-full px-4 py-2 text-sm sm:px-5 sm:text-base ${
-                  category === c ? "bg-violet-600 text-white" : "bg-slate-100 text-slate-600"
+                  category === c ? "bg-violet-600 text-white" : "bg-slate-100 text-slate-600 duration-300 hover:shadow-md hover:border-violet-300 hover:-translate-y-1 cursor-pointer"
                 }`}
               >
                 {c}
@@ -2226,21 +2337,22 @@ function handleScanValue(rawValue) {
           </div>
         </div>
 
-        <div className="p-4 sm:p-6">
-          <div className="overflow-x-auto rounded-[28px] border border-slate-200">
+        <div className="mb-4 mt-0 px-4 sm:px-6 xl:px-8">
+          <div className="rounded-[28px] border border-slate-200 overflow-hidden bg-white"> 
+            <div className="overflow-x-auto overflow-y-auto max-h-[75vh]">  
             <table className="min-w-[980px] w-full border-collapse text-xs xl:text-sm">
-              <thead className="bg-slate-50">
-                <tr className="text-left text-xs text-slate-500">
-                  <th className="px-3 py-3"></th>
-                  <th className="px-3 py-3 font-medium">SKU</th>
-                  <th className="px-3 py-3 font-medium">Name</th>
-                  <th className="px-3 py-3 font-medium">Category</th>
-                  <th className="px-3 py-3 font-medium">Material</th>
-                  <th className="px-3 py-3 font-medium">Price</th>
-                  <th className="px-3 py-3 font-medium">Stock</th>
-                  <th className="px-3 py-3 font-medium">Location</th>
-                  <th className="px-3 py-3 font-medium">Status</th>
-                  <th className="px-3 py-3 font-medium">Actions</th>
+            <thead className="sticky top-0 z-20 bg-white border-b border-slate-200 shadow-sm">
+              <tr className="text-left text-[11px] sm:text-xs xl:text-sm text-slate-500">
+                  <th className="px-4 py-4"></th>
+                  <th className="px-3 py-4 font-semibold bg-slate-50">SKU</th>
+                  <th className="px-3 py-4 font-semibold bg-slate-50">Name</th>
+                  <th className="px-3 py-4 font-semibold bg-slate-50">Category</th>
+                  <th className="px-3 py-4 font-semibold bg-slate-50">Material</th>
+                  <th className="px-3 py- font-semibold bg-slate-50">Price</th>
+                  <th className="px-3 py-4 font-semibold bg-slate-50">Stock</th>
+                  <th className="px-3 py-4 font-semibold bg-slate-50">Location</th>
+                  <th className="px-3 py-4 font-semibold bg-slate-50">Status</th>
+                  <th className="px-3 py-4 font-semibold bg-slate-50">Actions</th>
                 </tr>
               </thead>
 
@@ -2386,6 +2498,7 @@ function handleScanValue(rawValue) {
               </tbody>
             </table>
           </div>
+          </div>
 
           <p className="px-2 pt-6 text-sm text-slate-500">
             Showing {filteredItems.length} of {enrichedItems.length} items
@@ -2393,7 +2506,16 @@ function handleScanValue(rawValue) {
         </div>
 
         {selectedItem && (
-          <div className="fixed right-6 top-6 z-40 hidden h-[calc(100vh-48px)] w-[420px] overflow-y-auto rounded-[28px] border border-slate-200 bg-white p-6 shadow-2xl xl:block">          <div className="flex items-center justify-between">
+          <div className="fixed inset-0 z-40 hidden xl:block"
+                onClick={() => {
+                setSelectedItemId(null);
+                setMobileDetailsOpen(false);
+              }}
+              >
+                <div className="fixed right-6 top-6 h-[calc(100vh-48px)] w-[420px] overflow-y-auto rounded-[28px] border border-slate-200 bg-white p-6 shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+                    >
+                  <div className="flex items-center justify-between">
             <h2 className="text-2xl font-semibold text-slate-900">Item Details</h2>
             <button
               onClick={() => {
@@ -2510,13 +2632,14 @@ function handleScanValue(rawValue) {
             </AppButton>
           </div>
         </div>
+        </div>
       )}
     </div>
   );
 
   const renderRestockPage = () => (
     <div className="p-4 sm:p-6 xl:p-8">
-      <div className="mb-4 flex items-center gap-3">
+      <div className="mb-6 flex items-center gap-3">
         <button
           onClick={() => setMobileMenuOpen(true)}
           className="rounded-2xl border border-slate-200 p-3 text-slate-600 lg:hidden"
@@ -3422,11 +3545,16 @@ function handleScanValue(rawValue) {
     };
 
     return (
-      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 px-4">
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 px-4"
+      onClick={() => setQrModalItem(null)}
+>
         <div
           ref={qrDownloadRef}
-          className="relative w-full max-w-[480px] rounded-[24px] bg-white p-4 shadow-2xl"
-        >
+          
+  className="relative w-full max-w-[480px] rounded-[24px] bg-white p-4 shadow-2xl"
+  onClick={(e) => e.stopPropagation()}
+>
+        
         
           <h2 className="text-[24px] font-semibold text-slate-900">
             QR Code — {qrModalItem.id}
@@ -3565,7 +3693,7 @@ function handleScanValue(rawValue) {
 
   {/* USER INFO */}
   <div className="px-6 pt-5">
-    <div className="rounded-2xl bg-slate-50 p-4">
+  <div className="rounded-2xl bg-slate-100 p-4 transition-all duration-100 hover:bg-slate-50">
       <p className="text-xs text-slate-500">{isLoggedIn ? "Current User" : "View Only"}</p>
       <div className="mt-2 flex items-center justify-between gap-3">
         <p className="font-medium text-slate-900">{currentUser?.name || "Not logged in"}</p>
@@ -3599,7 +3727,7 @@ function handleScanValue(rawValue) {
   <div className="px-6 pb-32 sm:pb-6">
     <div className="rounded-3xl border border-slate-200 p-4">
       <div className="flex items-center gap-4">
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-white">
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-500 text-white">
           {currentUser?.name?.[0] || "A"}
         </div>
         <div>
