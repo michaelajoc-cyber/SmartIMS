@@ -2276,7 +2276,7 @@ function handleScanValue(rawValue) {
         <div className="flex items-center justify-between gap-2">
   <button
     onClick={() => setMobileMenuOpen(true)}
-    className="rounded-2xl border border-slate-200 p-3 lg:hidden shrink-0"
+    className="rounded-2xl border border-slate-200 p-3 text-slate-600 lg:hidden"
   >
     <Menu className="h-5 w-5" />
   </button>
