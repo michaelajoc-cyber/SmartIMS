@@ -3,6 +3,9 @@ import { QRCodeSVG } from "qrcode.react";
 import { ExternalLink, JapaneseYen } from "lucide-react";
 import { Html5Qrcode } from "html5-qrcode";
 import html2canvas from "html2canvas";
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import {
   Gem,
   LayoutDashboard,
@@ -520,6 +523,7 @@ function Field({ label, children }) {
   );
 }
 
+
 export default function App() {
   const [currentPage, setCurrentPage] = useState("Dashboard");
   const [activeDashboardMetric, setActiveDashboardMetric] = useState("Inventory Value");
@@ -550,6 +554,94 @@ export default function App() {
     return cleanedData;
   }, []);
 
+  const handleBackupData = () => {
+    const data = getSavedData() || {};
+  
+    const backup = {
+      inventory: data.items || [],
+      logs: data.logs || [],
+      users: data.users || [],
+      sales: data.sales || [],
+      exportedAt: new Date().toISOString(),
+    };
+  
+    const blob = new Blob([JSON.stringify(backup, null, 2)], {
+      type: "application/json",
+    });
+  
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+  
+    a.href = url;
+    a.download = `backup-${Date.now()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  
+    URL.revokeObjectURL(url);
+  };
+  
+  const exportExcelReport = () => {
+    const workbook = XLSX.utils.book_new();
+  
+    const inventorySheet = XLSX.utils.json_to_sheet(items || []);
+    const salesSheet = XLSX.utils.json_to_sheet(sales || []);
+    const logsSheet = XLSX.utils.json_to_sheet(logs || []);
+  
+    XLSX.utils.book_append_sheet(workbook, inventorySheet, "Inventory");
+    XLSX.utils.book_append_sheet(workbook, salesSheet, "Sales");
+    XLSX.utils.book_append_sheet(workbook, logsSheet, "Logs");
+  
+    XLSX.writeFile(workbook, `inventory-report-${Date.now()}.xlsx`);
+  };
+  
+  const exportPDFReport = () => {
+    const doc = new jsPDF();
+  
+    doc.setFontSize(18);
+    doc.text("Sales Report", 14, 20);
+  
+    autoTable(doc, {
+      startY: 30,
+      head: [["SKU", "Item", "Qty", "Price", "Total", "Sold By"]],
+      body: (sales || []).map((sale) => [
+        sale.sku || "",
+        sale.itemName || "",
+        sale.quantity || 0,
+        sale.price || 0,
+        sale.total || 0,
+        sale.soldBy || "",
+      ]),
+    });
+  
+    doc.save(`sales-report-${Date.now()}.pdf`);
+  };
+  const handleRestoreData = (event) => {
+    const file = event.target.files[0];
+  
+    if (!file) return;
+  
+    const reader = new FileReader();
+  
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target.result);
+  
+        localStorage.setItem(
+          "jewelryIMSData",
+          JSON.stringify(data)
+        );
+  
+        alert("Backup restored successfully!");
+  
+        window.location.reload();
+      } catch (error) {
+        alert("Invalid backup file.");
+      }
+    };
+  
+    reader.readAsText(file);
+  };
   const [salesReportView, setSalesReportView] = useState("daily");
   const [items, setItems] = useState(savedData?.items?.length ? savedData.items : initialItems);
   const [logs, setLogs] = useState(savedData?.logs?.length ? savedData.logs : initialLogs);
@@ -4144,14 +4236,13 @@ function handleScanValue(rawValue) {
       )}
     </div>
   )}
-
-  {settingsOpen && (
+{settingsOpen && (
   <div className="settings-container fixed inset-0 z-[999] bg-white">
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between border-b border-slate-200 p-4 sm:p-6">
         <div>
           <h2 className="text-2xl font-semibold text-slate-900">Settings</h2>
-          <p className="text-sm text-slate-500">Manage user, sync, currency, and account access.</p>
+          <p className="text-sm text-slate-500">Manage user, sync, currency, account access and back up restore.</p>
         </div>
         <button type="button" onClick={() => setSettingsOpen(false)} className="rounded-xl p-3 text-slate-500 hover:bg-slate-100">
           <X className="h-6 w-6" />
@@ -4159,14 +4250,18 @@ function handleScanValue(rawValue) {
       </div>
 
       <div className="flex gap-2 overflow-x-auto border-b border-slate-200 p-3 sm:px-6">
-        {["user", "sync", "currency", "signup"].map((tab) => (
+        {["user", "sync", "currency", "signup", "backup"].map((tab) => (
           <button
             key={tab}
             type="button"
             onClick={() => setSettingsTab(tab)}
             className={`rounded-2xl px-4 py-2 text-sm font-semibold capitalize ${settingsTab === tab ? "bg-violet-600 text-white" : "bg-slate-100 text-slate-600"}`}
           >
-            {tab === "signup" ? "Create Staff Account" : tab}
+            {tab === "signup"
+              ? "Create Staff Account"
+              : tab === "backup"
+              ? "Backup&Restore"
+              : tab}
           </button>
         ))}
       </div>
@@ -4308,14 +4403,48 @@ function handleScanValue(rawValue) {
             )}
           </div>
         )}
-      </div>
-    </div>
-  </div>
-)}
 
-          {qrModalItem && renderQrModal()}
-         {itemFormOpen && renderItemForm()}
-         
+        {settingsTab === "backup" && (
+          <div className="mx-auto max-w-3xl rounded-3xl border border-slate-200 bg-white p-5">
+            <h3 className="text-2xl font-semibold text-slate-900">
+              Backup & Restore
+            </h3>
+
+            <div className="flex gap-3 mt-4">
+              <button
+                type="button"
+                onClick={handleBackupData}
+                className="rounded-2xl bg-violet-600 px-5 py-3 font-semibold text-white"
+              >
+                Backup Data
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  document
+                    .getElementById("restoreBackupInput")
+                    .click()
+                }
+                className="rounded-2xl bg-slate-700 px-5 py-3 font-semibold text-white"
+              >
+                Restore Backup
+              </button>
+
+              <input
+                type="file"
+                accept=".json"
+                id="restoreBackupInput"
+                className="hidden"
+                onChange={handleRestoreData}
+              />
+            </div>
+          </div>
+        )}
+
+        {qrModalItem && renderQrModal()}
+        {itemFormOpen && renderItemForm()}
+
         {userFormOpen && (
           <div className="fixed inset-0 z-[1000] flex items-center justify-center overflow-y-auto bg-black/40 p-3 sm:p-4">
             <form onSubmit={saveUser} className="my-6 w-full max-w-sm rounded-3xl bg-white p-5 shadow-2xl">
@@ -4323,7 +4452,7 @@ function handleScanValue(rawValue) {
                 <h2 className="text-lg font-semibold text-slate-900">
                   {activeUsers.filter((u) => u.active !== false).length === 0
                     ? "Create Admin Account"
-                     : "Create Staff Account"}
+                    : "Create Staff Account"}
                 </h2>
                 <button
                   type="button"
@@ -4376,7 +4505,7 @@ function handleScanValue(rawValue) {
 
                 <div className="rounded-2xl bg-slate-50 p-3 text-sm text-slate-600">
                   Account type: <span className="font-semibold text-slate-900">
-                    {activeUsers.filter((u) => u.active !== false).length === 0  ? "Admin" : "Staff"}
+                    {activeUsers.filter((u) => u.active !== false).length === 0 ? "Admin" : "Staff"}
                   </span>
                 </div>
 
@@ -4394,12 +4523,17 @@ function handleScanValue(rawValue) {
                     ? "Saved ✓"
                     : activeUsers.filter((u) => u.active !== false).length === 0
                     ? "Create Admin Account"
-                     : "Create Staff Account"}
+                    : "Create Staff Account"}
                 </AppButton>
               </div>
             </form>
           </div>
-        )}
-       </div>
-    );
-    }
+               )}
+               </div>
+             </div>
+           </div>
+         )}
+         
+         </div>
+         );
+        }
