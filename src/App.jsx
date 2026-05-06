@@ -525,6 +525,7 @@ function Field({ label, children }) {
 
 
 export default function App() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState("Dashboard");
   const [activeDashboardMetric, setActiveDashboardMetric] = useState("Inventory Value");
   const savedData = useMemo(() => {
@@ -651,8 +652,8 @@ export default function App() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [selectedItemId, setSelectedItemId] = useState(null);
-
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  
   const [mobileDetailsOpen, setMobileDetailsOpen] = useState(false);
 
   const [currentRole, setCurrentRole] = useState(savedData?.currentRole || "viewer");
@@ -3611,6 +3612,7 @@ function handleScanValue(rawValue) {
       </div>
     </div>
   );
+
   const renderQrModal = () => {
     if (!qrModalItem) return null;
   
@@ -3747,9 +3749,10 @@ function handleScanValue(rawValue) {
           </div>
         </div>
         </div>
-    )};
+    );
+  };
 
-    const hasUsers = users.some(
+  const hasUsers = users.some(
       (u) => !u.isDeleted && u.username && u.password
     );
 
@@ -3832,6 +3835,7 @@ function handleScanValue(rawValue) {
         </div>
       </div>
     </div>
+    </div>
 
     <div className="mt-4 pb-20 sm:pb-6">
       {isLoggedIn ? (
@@ -3875,7 +3879,6 @@ function handleScanValue(rawValue) {
       </button>
     </div>
   </div>
-</div>
   
         <main className="min-w-0 bg-white pt-2">
           {currentPage === "Dashboard" && renderDashboard()}
@@ -3886,13 +3889,13 @@ function handleScanValue(rawValue) {
           {currentPage === "Operation Hub" && renderOperationHub()}
         </main>
       </div>
-  
+
       {mobileMenuOpen && (
-  <div
-    className="fixed inset-0 z-30 bg-slate-900/30 lg:hidden"
-    onClick={() => setMobileMenuOpen(false)}
-  />
-)}
+    <div
+      className="fixed inset-0 z-30 bg-slate-900/30 lg:hidden"
+      onClick={() => setMobileMenuOpen(false)}
+    />
+  )}
   
       {mobileDetailsOpen && selectedItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 lg:hidden">
@@ -3953,6 +3956,7 @@ function handleScanValue(rawValue) {
                 </p>
               </div>
              </div>
+                
   
               {permissions.canViewLogs && (
                  <div className="mt-4">
@@ -4236,6 +4240,10 @@ function handleScanValue(rawValue) {
       )}
     </div>
   )}
+
+{qrModalItem && renderQrModal()}
+{itemFormOpen && renderItemForm()}
+
 {settingsOpen && (
   <div className="settings-container fixed inset-0 z-[999] bg-white">
     <div className="flex h-full flex-col">
@@ -4404,7 +4412,7 @@ function handleScanValue(rawValue) {
           </div>
         )}
 
-        {settingsTab === "backup" && (
+                {settingsTab === "backup" && (
           <div className="mx-auto max-w-3xl rounded-3xl border border-slate-200 bg-white p-5">
             <h3 className="text-2xl font-semibold text-slate-900">
               Backup & Restore
@@ -4441,99 +4449,98 @@ function handleScanValue(rawValue) {
             </div>
           </div>
         )}
+      </div>
+    </div>
+  </div>
+)}
 
-        {qrModalItem && renderQrModal()}
-        {itemFormOpen && renderItemForm()}
 
-        {userFormOpen && (
-          <div className="fixed inset-0 z-[1000] flex items-center justify-center overflow-y-auto bg-black/40 p-3 sm:p-4">
-            <form onSubmit={saveUser} className="my-6 w-full max-w-sm rounded-3xl bg-white p-5 shadow-2xl">
-              <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-slate-900">
-                  {activeUsers.filter((u) => u.active !== false).length === 0
-                    ? "Create Admin Account"
-                    : "Create Staff Account"}
-                </h2>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setUserForm(emptyUserForm);
-                    setUserFormOpen(false);
-                    setLoginError("");
-                  }}
-                  className="rounded-xl p-2 text-slate-500 hover:bg-slate-100"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
 
-              <p className="mt-2 text-sm text-slate-500">
-                {activeUsers.filter((u) => u.active !== false).length === 0
-                  ? "Create the first Admin account to unlock editing, sales, restock, users, and sync controls."
-                  : "Create a staff login account. Admin controls role and access from the Users page."}
-              </p>
+{userFormOpen && (
+  <div className="fixed inset-0 z-[1000] flex items-center justify-center overflow-y-auto bg-black/40 p-3 sm:p-4">
+    <form onSubmit={saveUser} className="my-6 w-full max-w-sm rounded-3xl bg-white p-5 shadow-2xl">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-slate-900">
+          {activeUsers.filter((u) => u.active !== false).length === 0
+            ? "Create Admin Account"
+            : "Create Staff Account"}
+        </h2>
+        <button
+          type="button"
+          onClick={() => {
+            setUserForm(emptyUserForm);
+            setUserFormOpen(false);
+            setLoginError("");
+          }}
+          className="rounded-xl p-2 text-slate-500 hover:bg-slate-100"
+        >
+          <X className="h-5 w-5" />
+        </button>
+      </div>
 
-              <div className="mt-4 space-y-4">
-                <Field label="Name">
-                  <input
-                    value={userForm.name}
-                    onChange={(e) => setUserForm((prev) => ({ ...prev, name: e.target.value }))}
-                    className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none"
-                    placeholder="Full name"
-                  />
-                </Field>
+      <p className="mt-2 text-sm text-slate-500">
+        {activeUsers.filter((u) => u.active !== false).length === 0
+          ? "Create the first Admin account to unlock editing, sales, restock, users, and sync controls."
+          : "Create a staff login account. Admin controls role and access from the Users page."}
+      </p>
 
-                <Field label="Email">
-                  <input
-                    type="email"
-                    value={userForm.email}
-                    onChange={(e) => setUserForm((prev) => ({ ...prev, email: e.target.value }))}
-                    className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none"
-                    placeholder="email@example.com"
-                  />
-                </Field>
+      <div className="mt-4 space-y-4">
+        <Field label="Name">
+          <input
+            value={userForm.name}
+            onChange={(e) => setUserForm((prev) => ({ ...prev, name: e.target.value }))}
+            className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none"
+            placeholder="Full name"
+          />
+        </Field>
 
-                <Field label="Password">
-                  <input
-                    type="password"
-                    value={userForm.password}
-                    onChange={(e) => setUserForm((prev) => ({ ...prev, password: e.target.value }))}
-                    className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none"
-                    placeholder="Create password"
-                  />
-                </Field>
+        <Field label="Email">
+          <input
+            type="email"
+            value={userForm.email}
+            onChange={(e) => setUserForm((prev) => ({ ...prev, email: e.target.value }))}
+            className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none"
+            placeholder="email@example.com"
+          />
+        </Field>
 
-                <div className="rounded-2xl bg-slate-50 p-3 text-sm text-slate-600">
-                  Account type: <span className="font-semibold text-slate-900">
-                    {activeUsers.filter((u) => u.active !== false).length === 0 ? "Admin" : "Staff"}
-                  </span>
-                </div>
+        <Field label="Password">
+          <input
+            type="password"
+            value={userForm.password}
+            onChange={(e) => setUserForm((prev) => ({ ...prev, password: e.target.value }))}
+            className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none"
+            placeholder="Create password"
+          />
+        </Field>
 
-                {loginError && <p className="text-sm text-rose-600">{loginError}</p>}
+        <div className="rounded-2xl bg-slate-50 p-3 text-sm text-slate-600">
+          Account type: <span className="font-semibold text-slate-900">
+            {activeUsers.filter((u) => u.active !== false).length === 0 ? "Admin" : "Staff"}
+          </span>
+        </div>
 
-                <AppButton
-                  type="submit"
-                  className={`h-12 w-full ${userSaveStatus === "saved" ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-100" : ""}`}
-                  disabled={userSaveStatus === "saving"}
-                >
-                  <UserCog className="mr-2 h-4 w-4" />
-                  {userSaveStatus === "saving"
-                    ? "Saving..."
-                    : userSaveStatus === "saved"
-                    ? "Saved ✓"
-                    : activeUsers.filter((u) => u.active !== false).length === 0
-                    ? "Create Admin Account"
-                    : "Create Staff Account"}
-                </AppButton>
-              </div>
-            </form>
-          </div>
-               )}
-               </div>
-             </div>
-           </div>
-         )}
-         
-         </div>
-         );
-        }
+        {loginError && <p className="text-sm text-rose-600">{loginError}</p>}
+
+        <AppButton
+          type="submit"
+          className={`h-12 w-full ${userSaveStatus === "saved" ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-100" : ""}`}
+          disabled={userSaveStatus === "saving"}
+        >
+          <UserCog className="mr-2 h-4 w-4" />
+          {userSaveStatus === "saving"
+            ? "Saving..."
+            : userSaveStatus === "saved"
+            ? "Saved ✓"
+            : activeUsers.filter((u) => u.active !== false).length === 0
+            ? "Create Admin Account"
+            : "Create Staff Account"}
+        </AppButton>
+      </div>
+    </form>
+  </div>
+)}
+
+    </div>
+  );
+}
