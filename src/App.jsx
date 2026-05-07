@@ -5,6 +5,7 @@ import { Html5Qrcode } from "html5-qrcode";
 import html2canvas from "html2canvas";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
+import imsLogo from "./assets/ims-logo.png";
 import autoTable from "jspdf-autotable";
 import {
   Gem,
@@ -4545,13 +4546,16 @@ function handleScanValue(rawValue) {
   <div className="border-b border-slate-200 px-6 py-7">
     <div className="flex items-center justify-between gap-4">
       <div className="flex items-center gap-4">
-        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-100 text-violet-700">
-          <Gem className="h-8 w-8" />
-        </div>
+      <img
+  src={imsLogo}
+  alt="IMS Logo"
+  className="h-14 w-14 object-contain rounded-2xl"
+/>
+        
 
         <div>
-          <p className="text-[34px] font-semibold leading-none">Jewelry IMS</p>
-          <p className="mt-2 text-xl text-slate-500">Inventory System</p>
+          <p className="text-[34px] font-semibold leading-none">Inventory Management System</p>
+          <p className="mt-2 text-xl text-slate-500">Digital IMS</p>
         </div>
       </div>
 
