@@ -707,7 +707,26 @@ export default function App() {
   const [passwordForm, setPasswordForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
   const [passwordSaveStatus, setPasswordSaveStatus] = useState("idle");
   const [operationOrders, setOperationOrders] = useState(savedData?.operationOrders || []);
-  const [operationForm, setOperationForm] = useState({ type: "Job Order", title: "", amount: "", dueDate: "", notes: "", customer: "", status: "Pending" });
+  const [operationSaveStatus, setOperationSaveStatus] = useState("idle");
+  const [operationForm, setOperationForm] = useState({
+    type: "Customer Invoice",
+    title: "",
+    amount: "",
+    dueDate: "",
+    notes: "",
+    customer: "",
+    status: "Pending",
+    itemDetails: "",
+    quantity: 1,
+    unitPrice: "",
+    discount: 0,
+    paymentMethod: "Cash",
+    serviceAmount: "",
+    staffShare: "",
+    deductions: "",
+    finalServiceCharge: 0,
+  });
+  const [documentViewModal, setDocumentViewModal] = useState(null);
   const [settingsTab, setSettingsTab] = useState("user");
   const [loginOpen, setLoginOpen] = useState(false);
   const [loginForm, setLoginForm] = useState({
@@ -715,6 +734,8 @@ export default function App() {
     password: "",
   });
   
+
+
   const [setupForm, setSetupForm] = useState({
     name: "",
     email: "",
@@ -772,6 +793,78 @@ export default function App() {
     }).format(converted);
   };
 
+const operationTypes = [
+  "Customer Invoice",
+  "Job Order",
+  "Factory Job Order Sheet",
+  "Staff Service Charge Calculator",
+  "Scheduled Payment",
+  "Rent",
+  "Tax",
+  "Staff Salary",
+  "Others",
+];
+
+const companyInfo = {
+  name: "Your Company Name",
+  address: "Street Address, City, Zip Code",
+  phone: "Phone Number",
+  email: "Email Address",
+};
+
+  function getDueStatus(dueDate, status) {
+    if (status === "Paid") return "paid";
+  
+    const today = new Date();
+    const due = new Date(dueDate);
+  
+    const diff = Math.ceil((due - today) / (1000 * 60 * 60 * 24));
+  
+    if (diff < 0) return "overdue";
+    if (diff <= 2) return "urgent";
+    if (diff <= 7) return "soon";
+  
+    return "safe";
+  }
+  
+  function getDueStyles(status) {
+    switch (status) {
+      case "paid":
+        return {
+          bar: "bg-emerald-500",
+          badge: "bg-emerald-100 text-emerald-700",
+          label: "Paid",
+        };
+  
+      case "soon":
+        return {
+          bar: "bg-yellow-400",
+          badge: "bg-yellow-100 text-yellow-700",
+          label: "Due Soon",
+        };
+  
+      case "urgent":
+        return {
+          bar: "bg-orange-500",
+          badge: "bg-orange-100 text-orange-700",
+          label: "Urgent",
+        };
+  
+      case "overdue":
+        return {
+          bar: "bg-rose-600",
+          badge: "bg-rose-100 text-rose-700",
+          label: "Overdue",
+        };
+  
+      default:
+        return {
+          bar: "bg-blue-500",
+          badge: "bg-slate-100 text-slate-700",
+          label: "Active",
+        };
+    }
+  }
   const enrichedItems = useMemo(
     () =>
       items
@@ -779,7 +872,7 @@ export default function App() {
         .map((item) => ({
           ...item,
           stock: Number(item.stock || 0),
-          minStock: Number(item.minStock || 0),
+          minStock: Number(item.minStock || 1),
           capacity: Number(item.capacity || 0),
           price: Number(item.price || 0),
           status: getStockStatus(item),
@@ -1036,7 +1129,7 @@ export default function App() {
       material: row.material || row.Material || "",
       price: Number(row.price || row.Price || 0),
       stock: Number(row.stock || row.Stock || 0),
-      minStock: Number(row.minStock || row["Min Stock"] || 0),
+      minStock: Number(row.minStock || row["Min Stock"] || 1),
       capacity: Number(row.capacity || row.Capacity || 0),
       image: row.image || row.Image || "",
       barcode: row.barcode || row.Barcode || "",
@@ -1201,7 +1294,7 @@ export default function App() {
       price: String(item.price ?? ""),
       stock: String(item.stock ?? ""),
       originalStock: Number(item.stock ?? 0),
-      minStock: String(item.minStock ?? ""),
+      minStock: String(item.minStock ?? "1"),
       capacity: String(item.capacity ?? ""),
     });
     setItemFormOpen(true);
@@ -1258,6 +1351,266 @@ Thank you.`
     const win = window.open("", "_blank");
     win?.document.write(html);
     win?.document.close();
+  }
+
+  function printOperationDocument(doc) {
+    const popup = window.open("", "_blank");
+  
+    popup.document.write(`
+      <html>
+        <head>
+          <title>${doc.type}</title>
+  
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              padding: 40px;
+              color: #111827;
+            }
+  
+            .invoice-container {
+              max-width: 900px;
+              margin: auto;
+            }
+  
+            .top-header {
+              display: flex;
+              justify-content: space-between;
+              align-items: flex-start;
+              border-bottom: 3px solid #2563eb;
+              padding-bottom: 20px;
+              margin-bottom: 30px;
+            }
+
+            .paid-stamp {
+              display: inline-block;
+              margin-top: 12px;
+              border: 3px solid #dc2626;
+              color: #dc2626;       
+              font-size: 28px;
+              font-weight: bold;
+              padding: 8px 18px;
+              transform: rotate(-8deg);
+            }
+  
+            .company-name {
+              font-size: 30px;
+              font-weight: bold;
+              color: #2563eb;
+              margin-bottom: 10px;
+            }
+  
+            .invoice-title {
+              font-size: 42px;
+              font-weight: bold;
+              color: #2563eb;
+            }
+  
+            .section-title {
+              font-size: 20px;
+              font-weight: bold;
+              margin-bottom: 10px;
+              color: #2563eb;
+            }
+  
+            .grid {
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 30px;
+              margin-bottom: 30px;
+            }
+  
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-top: 20px;
+            }
+  
+            th {
+              background: #2563eb;
+              color: white;
+              padding: 12px;
+              text-align: left;
+            }
+  
+            td {
+              border: 1px solid #d1d5db;
+              padding: 12px;
+            }
+  
+            .totals {
+              margin-top: 30px;
+              width: 320px;
+              margin-left: auto;
+            }
+  
+            .totals-row {
+              display: flex;
+              justify-content: space-between;
+              padding: 10px 0;
+              border-bottom: 1px solid #d1d5db;
+            }
+  
+            .grand-total {
+              font-size: 22px;
+              font-weight: bold;
+              color: #2563eb;
+            }
+  
+            .signature {
+              margin-top: 80px;
+              text-align: right;
+            }
+  
+            .signature-line {
+              margin-top: 50px;
+              border-top: 1px solid #111;
+              width: 220px;
+              margin-left: auto;
+              padding-top: 8px;
+              text-align: center;
+            }
+  
+            .footer {
+              margin-top: 60px;
+              text-align: center;
+              color: #6b7280;
+              font-size: 14px;
+            }
+          </style>
+        </head>
+  
+        <body>
+          <div class="invoice-container">
+  
+            <div class="top-header">
+              <div>
+                <div class="company-name">
+                  ${companyInfo.name}
+                </div>
+  
+                <div>${companyInfo.address}</div>
+                <div>${companyInfo.phone}</div>
+                <div>${companyInfo.email}</div>
+              </div>
+  
+              <div class="invoice-title">
+                ${doc.type}
+              </div>
+            </div>
+  
+            <div class="grid">
+  
+              <div>
+                <div class="section-title">Bill To</div>
+  
+                <div>${doc.customer || "-"}</div>
+              </div>
+  
+              <div>
+                <div><strong>Reference:</strong> ${doc.reference || "-"}</div>
+                <div><strong>Date:</strong> ${doc.createdAt || "-"}</div>
+                <div><strong>Due Date:</strong> ${doc.dueDate || "-"}</div>
+                <div><strong>Status:</strong> ${doc.status || "Pending"}</div>
+              </div>
+  
+            </div>
+  
+            <table>
+              <thead>
+                <tr>
+                  <th>Description</th>
+                  <th>Qty</th>
+                  <th>Unit Price</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+  
+              <tbody>
+                <tr>
+                  <td>${doc.itemDetails || doc.notes || "-"}</td>
+                  <td>${doc.quantity || 1}</td>
+                  <td>${doc.unitPrice || 0}</td>
+                  <td>${doc.amount || 0}</td>
+                </tr>
+              </tbody>
+            </table>
+  
+            <div class="totals">
+
+  ${
+    doc.type === "Staff Service Charge Calculator"
+      ? `
+        <div class="totals-row">
+          <span>Service Amount</span>
+          <span>฿${doc.serviceAmount || 0}</span>
+        </div>
+
+        <div class="totals-row">
+          <span>Staff Share %</span>
+          <span>${doc.staffShare || 0}%</span>
+        </div>
+
+        <div class="totals-row">
+          <span>Deductions</span>
+          <span>฿${doc.deductions || 0}</span>
+        </div>
+
+        <div class="totals-row grand-total">
+          <span>Total</span>
+          <span>฿${doc.finalServiceCharge || 0}</span>
+        </div>
+      `
+      : `
+        <div class="totals-row">
+          <span>Subtotal</span>
+          <span>฿${doc.amount || 0}</span>
+        </div>
+
+        <div class="totals-row">
+          <span>Discount</span>
+          <span>${doc.discount || 0}%</span>
+        </div>
+
+        <div class="totals-row grand-total">
+          <span>Total</span>
+          <span>฿${doc.amount || 0}</span>
+        </div>
+      `
+  }
+
+</div>
+  
+            <div style="margin-top:40px;">
+              <strong>Notes:</strong><br/>
+              ${doc.notes || "-"}
+            </div>
+
+            ${doc.status === "Paid"
+              ? `<div class="paid-stamp">PAID</div>`
+              : ""}
+
+            <div class="signature">
+              <div class="signature-line">
+                Authorized Signature
+              </div>
+            </div>
+  
+            <div class="footer">
+              Thank you for your business!
+            </div>
+  
+          </div>
+  
+          <script>
+            window.onload = () => window.print()
+          </script>
+  
+        </body>
+      </html>
+    `);
+  
+    popup.document.close();
   }
 
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -1352,7 +1705,7 @@ const normalized = {
   ...itemForm,
   price: Number(itemForm.price || 0),
   stock: Number(itemForm.stock || 0),
-  minStock: Number(itemForm.minStock || 0),
+  minStock: Number(itemForm.minStock || 1),
   capacity: Number(itemForm.capacity || 0),
   updatedAt: new Date()
     .toLocaleString("sv-SE", { timeZone: "Asia/Bangkok" })
@@ -1394,7 +1747,6 @@ const updatedLogs = editLog ? [editLog, ...logs] : logs;
   setLogs(updatedLogs);
   setSelectedItemId(normalized.id);
 
-
   await pushAllToSheets(
     {
       items: updatedItems,
@@ -1407,8 +1759,9 @@ const updatedLogs = editLog ? [editLog, ...logs] : logs;
   );
   
   await new Promise((resolve) => setTimeout(resolve, 1000));
-
-setItemFormOpen(false);
+  setIsUpdating(false);
+  setItemFormOpen(false);
+  
 } catch (error) {
   console.error("Save item failed:", error);
   alert("Item was not saved. Please try again.");
@@ -2132,8 +2485,8 @@ function handleScanValue(rawValue) {
           </div>
         </div>
 
-        <div className="ml-auto flex items-center gap-3">
-          {["THB", "USD"].map((code) => (
+        <div className="ml-auto flex items-center gap-4">
+          {["THB", "USD","PHP"].map((code) => (
             <button
               key={code}
               type="button"
@@ -3099,28 +3452,453 @@ function handleScanValue(rawValue) {
 
   const renderOperationHub = () => (
     <div className="p-4 sm:p-6 xl:p-8">
-      <div className="mb-6 flex items-center gap-3">
-        <button onClick={() => setMobileMenuOpen(true)} className="rounded-2xl border border-slate-200 p-3 text-slate-600 lg:hidden">
-          <Menu className="h-5 w-5" />
-        </button>
-        <div>
-          <h1 className="text-3xl font-semibold text-slate-900 sm:text-4xl">Operation Hub</h1>
-          <p className="mt-1 text-slate-500">View job orders, payables, salaries, tax, rent, and customer invoices. Admin login is required to create records.</p>
-        </div>
+      <div className="mb-6">
+        <h1 className="text-3xl font-semibold text-slate-900">
+          Operation Hub
+        </h1>
+  
+        <p className="mt-1 text-slate-500">
+          Manage invoices, job orders, dues, salaries, tax, and business operations.
+        </p>
       </div>
-      {currentRole !== "admin" && (<div className="mb-6 rounded-3xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-800">View-only mode. Please log in as Admin to create or edit operation records.</div>)}
-      <div className={`grid gap-6 ${currentRole === "admin" ? "xl:grid-cols-[420px_1fr]" : "grid-cols-1"}`}>
-        {currentRole === "admin" && (
-          <form onSubmit={saveOperationOrder} className="rounded-3xl border border-slate-200 bg-white p-5 space-y-4">
-            <h2 className="text-xl font-semibold text-slate-900">Create Document</h2>
-            <Field label="Type"><select value={operationForm.type} onChange={(e) => setOperationForm((p) => ({ ...p, type: e.target.value }))} className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none"><option>Job Order</option><option>Factory Job Order Sheet</option><option>Customer Invoice</option><option>Scheduled Payment</option><option>Rent</option><option>Tax</option><option>Staff Salary</option><option>Admin Paperwork</option></select></Field>
-            <Field label="Title / Reference"><input value={operationForm.title} onChange={(e) => setOperationForm((p) => ({ ...p, title: e.target.value }))} className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none" placeholder="Example: Factory repair order / April rent" /></Field>
-            <div className="grid gap-4 sm:grid-cols-2"><Field label="Amount"><input type="number" value={operationForm.amount} onChange={(e) => setOperationForm((p) => ({ ...p, amount: e.target.value }))} className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none" /></Field><Field label="Due Date"><input type="date" value={operationForm.dueDate} onChange={(e) => setOperationForm((p) => ({ ...p, dueDate: e.target.value }))} className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none" /></Field></div>
-            <Field label="Customer / Payee"><input value={operationForm.customer} onChange={(e) => setOperationForm((p) => ({ ...p, customer: e.target.value }))} className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none" /></Field>
-            <Field label="Notes / Item Details"><textarea value={operationForm.notes} onChange={(e) => setOperationForm((p) => ({ ...p, notes: e.target.value }))} className="min-h-[110px] w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none" /></Field>
-            <AppButton className="h-12 w-full"><Save className="mr-2 h-4 w-4" />Save to Hub</AppButton>
-          </form>)}
-        <div className="rounded-3xl border border-slate-200 bg-white p-5"><h2 className="mb-4 text-xl font-semibold text-slate-900">Operation Documents</h2><div className="space-y-3">{operationOrders.length === 0 && <p className="text-sm text-slate-500">No operation records yet.</p>}{operationOrders.map((order) => (<div key={order.id} className="rounded-2xl border border-slate-200 p-4"><div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"><div><p className="font-semibold text-slate-900">{order.title}</p><p className="text-sm text-slate-500">{order.type} • Due: {order.dueDate || "—"} • {formatCurrency(order.amount)}</p><p className="mt-2 text-sm text-slate-600">{order.notes || "No notes"}</p></div><AppButton variant="outline" onClick={() => printOperationOrder(order)}><Printer className="mr-2 h-4 w-4" />Print</AppButton></div></div>))}</div></div>
+  
+      <div className="grid gap-6 xl:grid-cols-2">
+  
+        <div className="rounded-3xl border border-slate-200 bg-white p-5">
+          <h2 className="mb-5 text-2xl font-semibold">
+            Create Document
+          </h2>
+  
+          <div className="space-y-4">
+  
+            <Field label="Document Type">
+              <select
+                value={operationForm.type}
+                onChange={(e) =>
+                  setOperationForm({
+                    ...operationForm,
+                    type: e.target.value,
+                  })
+                }
+                className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none"
+              >
+                {operationTypes.map((type) => (
+                  <option key={type}>{type}</option>
+                ))}
+              </select>
+            </Field>
+  
+            <Field label="Title / Reference">
+              <input
+                type="text"
+                value={operationForm.title}
+                onChange={(e) =>
+                  setOperationForm({
+                    ...operationForm,
+                    title: e.target.value,
+                  })
+                }
+                className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none"
+              />
+            </Field>
+  
+            <Field label="Customer / Staff Name">
+              <input
+                type="text"
+                value={operationForm.customer}
+                onChange={(e) =>
+                  setOperationForm({
+                    ...operationForm,
+                    customer: e.target.value,
+                  })
+                }
+                className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none"
+              />
+            </Field>
+
+            <Field label="Unit Price">
+  <input
+    type="number"
+    value={operationForm.unitPrice}
+    onChange={(e) =>
+      setOperationForm({
+        ...operationForm,
+        unitPrice: e.target.value,
+      })
+    }
+    className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none"
+  />
+</Field>
+            
+            <div className="grid gap-4 md:grid-cols-2">
+              <Field label="Amount">
+                <input
+                  type="number"
+                  value={operationForm.amount}
+                  onChange={(e) =>
+                    setOperationForm({
+                      ...operationForm,
+                      amount: e.target.value,
+                    })
+                  }
+                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none"
+                />
+              </Field>
+              
+  
+              <Field label="Due Date">
+                <input
+                  type="date"
+                  value={operationForm.dueDate}
+                  onChange={(e) =>
+                    setOperationForm({
+                      ...operationForm,
+                      dueDate: e.target.value,
+                    })
+                  }
+                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none"
+                />
+              </Field>
+            </div>
+  
+            <Field label="Item Details">
+              <textarea
+                rows={4}
+                value={operationForm.itemDetails}
+                onChange={(e) =>
+                  setOperationForm({
+                    ...operationForm,
+                    itemDetails: e.target.value,
+                  })
+                }
+                className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none"
+              />
+            </Field>
+  
+            {operationForm.type === "Staff Service Charge Calculator" && (
+              <div className="rounded-2xl bg-slate-50 p-4">
+                <div className="grid gap-4 md:grid-cols-3">
+                  <Field label="Service Amount">
+                    <input
+                      type="number"
+                      value={operationForm.serviceAmount}
+                      onChange={(e) =>
+                        setOperationForm({
+                          ...operationForm,
+                          serviceAmount: e.target.value,
+                        })
+                      }
+                      className="w-full rounded-2xl border border-slate-200 px-4 py-3"
+                    />
+                  </Field>
+  
+                  <Field label="Staff Share %">
+                    <input
+                      type="number"
+                      value={operationForm.staffShare}
+                      onChange={(e) => {
+                        const serviceAmount = Number(operationForm.serviceAmount || 0);
+                        const share = Number(e.target.value || 0);
+  
+                        const finalAmount =
+                          serviceAmount * (share / 100);
+  
+                        setOperationForm({
+                          ...operationForm,
+                          staffShare: e.target.value,
+                          finalServiceCharge: finalAmount,
+                        })
+                      }}
+                      className="w-full rounded-2xl border border-slate-200 px-4 py-3"
+                    />
+                  </Field>
+  
+                  <Field label="Final Service Charge">
+                    <input
+                      type="text"
+                      disabled
+                      value={formatCurrency(operationForm.finalServiceCharge || 0)}
+                      className="w-full rounded-2xl border border-slate-200 bg-slate-100 px-4 py-3"
+                    />
+                  </Field>
+                </div>
+              </div>
+            )}
+  
+            <Field label="Notes">
+              <textarea
+                rows={4}
+                value={operationForm.notes}
+                onChange={(e) =>
+                  setOperationForm({
+                    ...operationForm,
+                    notes: e.target.value,
+                  })
+                }
+                className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none"
+              />
+            </Field>
+  
+            <div className="flex flex-wrap gap-3">
+            <AppButton
+  className={`${
+    operationSaveStatus === "saved"
+      ? "bg-emerald-500 hover:bg-emerald-600 text-white"
+      : ""
+  }`}
+  onClick={() => {
+    let updatedOrders;
+  
+    if (operationForm.id) {
+      // EDIT EXISTING
+      updatedOrders = operationOrders.map((doc) =>
+        doc.id === operationForm.id
+          ? {
+              ...operationForm,
+              updatedAt: new Date().toLocaleString(),
+            }
+          : doc
+      );
+    } else {
+      // CREATE NEW
+      const newDoc = {
+        ...operationForm,
+        id: Date.now(),
+        reference: `DOC-${Date.now()}`,
+        createdAt: new Date().toLocaleString(),
+      };
+  
+      updatedOrders = [newDoc, ...operationOrders];
+    }
+  
+    setOperationOrders(updatedOrders);
+  
+    persistAll({
+      operationOrders: updatedOrders,
+    });
+    setOperationForm({
+      type: "Customer Invoice",
+      title: "",
+      amount: "",
+      dueDate: "",
+      notes: "",
+      customer: "",
+      status: "Pending",
+      itemDetails: "",
+      quantity: 1,
+      unitPrice: "",
+      discount: 0,
+      paymentMethod: "Cash",
+      serviceAmount: "",
+      staffShare: "",
+      deductions: "",
+      finalServiceCharge: 0,
+    });
+  
+    setOperationSaveStatus("saved");
+  
+    setTimeout(() => {
+      setOperationSaveStatus("idle");
+    }, 1200);
+  }}
+>
+  {operationSaveStatus === "saved"
+    ? "Saved ✓"
+    : "Save Document"}
+</AppButton>
+  
+              <AppButton
+                variant="outline"
+                onClick={() => printOperationDocument(operationForm)}
+              >
+                <Printer className="mr-2 h-4 w-4" />
+                Print
+              </AppButton>
+            </div>
+          </div>
+        </div>
+  
+        <div className="rounded-3xl border border-slate-200 bg-white p-5">
+          <div className="mb-5 flex items-center justify-between">
+            <h2 className="text-2xl font-semibold">
+              Operation Documents & Monthly Dues
+            </h2>
+          </div>
+  
+          <div className="space-y-4 max-h-[850px] overflow-y-auto pr-2">
+  
+            {operationOrders.length === 0 && (
+              <div className="rounded-2xl bg-slate-50 p-6 text-center text-slate-500">
+                No operation records yet.
+              </div>
+            )}
+  
+            {operationOrders
+              .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
+              .map((doc) => {
+                const dueStatus = getDueStatus(doc.dueDate, doc.status);
+                const styles = getDueStyles(dueStatus);
+  
+                return (
+                  <div
+                    key={doc.id}
+                    className="rounded-3xl border border-slate-200 p-5"
+                  >
+                    <div className="mb-3 flex items-start justify-between gap-3">
+
+<div>
+  <h3 className="text-2xl font-bold text-slate-900">
+    {doc.type}
+  </h3>
+
+  <p className="mt-1 text-slate-500">
+    {doc.reference}
+  </p>
+</div>
+
+<div className="flex items-center gap-2">
+
+<span
+  className={`rounded-full px-3 py-1 text-xs font-semibold ${
+    styles.label === "Active"
+      ? "bg-emerald-100 text-emerald-700"
+      : styles.badge
+  }`}
+>
+  {styles.label}
+</span>
+
+  {currentRole === "admin" && (
+    <button
+      onClick={() => {
+        const confirmed = window.confirm(
+          "Delete this document?"
+        );
+
+        if (!confirmed) return;
+
+        const updated = operationOrders.filter(
+          (x) => x.id !== doc.id
+        );
+
+        setOperationOrders(updated);
+
+        persistAll({
+          operationOrders: updated,
+        });
+      }}
+      className="rounded-full border border-rose-200 bg-white px-3 py-1 text-xs font-semibold text-rose-600 hover:bg-rose-50"
+    >
+      Delete
+    </button>
+  )}
+
+</div>
+
+</div>
+  
+                    <div className="mb-3 space-y-1 text-sm text-slate-600">
+                      <p>
+                        <strong>Customer / Staff:</strong> {doc.customer}
+                      </p>
+  
+                      <p>
+                        <strong>Amount:</strong> {formatCurrency(doc.amount || 0)}
+                      </p>
+  
+                      <p>
+                        <strong>Due:</strong> {doc.dueDate || "N/A"}
+                      </p>
+                    </div>
+  
+                    <div className="mb-4 h-3 overflow-hidden rounded-full bg-slate-100">
+                      <div className={`h-full ${styles.bar}`} style={{ width: "100%" }} />
+                    </div>
+  
+                    <div className="flex flex-wrap gap-2">
+                      <AppButton
+                        variant="outline"
+                        onClick={() => setDocumentViewModal(doc)}
+                      >
+                        View
+                      </AppButton>
+  
+                      <AppButton
+                        variant="outline"
+                        onClick={() => printOperationDocument(doc)}
+                      >
+                        Print
+                      </AppButton>
+
+
+<AppButton
+  variant="outline"
+  onClick={() => {
+    setOperationForm(doc);
+    setDocumentViewModal(null);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }}
+>
+  Edit
+</AppButton>
+                      {![
+                    "Customer Invoice",
+                    "Job Order",
+                    "Factory Job Order Sheet",
+                    ].includes(doc.type) && (
+                     <AppButton
+                      variant="outline"
+                      onClick={() => {
+                       const updated = operationOrders.map((x) =>
+                       x.id === doc.id
+                      ? {
+                       ...x,
+                       status: "Paid",
+                       }
+                         : x
+                         );
+
+                        setOperationOrders(updated);
+
+                        persistAll({
+                       operationOrders: updated,
+                      });
+                       }}
+                      >
+                      Mark Paid
+                      </AppButton>
+                      )}
+                      {currentRole === "admin" && doc.status === "Paid" && (
+                        <AppButton
+                         variant="outline"
+                        className="border-rose-200 text-rose-600 hover:bg-rose-50"
+                        onClick={() => {
+                         const confirmed = window.confirm(
+                       "Delete this settled document?"
+                        );
+
+                        if (!confirmed) return;
+
+                        const updated = operationOrders.filter(
+                       (x) => x.id !== doc.id
+                       );
+
+                       setOperationOrders(updated);
+
+                       persistAll({
+                       operationOrders: updated,
+                       });
+                      }}
+                     >
+                     Delete
+                    </AppButton>
+                    )}
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -4538,6 +5316,145 @@ function handleScanValue(rawValue) {
         </AppButton>
       </div>
     </form>
+  </div>
+)}
+{documentViewModal && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+    <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-3xl bg-white p-8 shadow-2xl">
+      
+      <div className="mb-6 flex items-start justify-between border-b-4 border-blue-600 pb-5">
+        <div>
+          <h1 className="text-4xl font-bold text-blue-700">
+            {documentViewModal.type === "Customer Invoice"
+              ? "INVOICE"
+              : documentViewModal.type}
+          </h1>
+          <p className="mt-2 text-sm text-slate-500">
+            {documentViewModal.reference || `DOC-${documentViewModal.id}`}
+          </p>
+        </div>
+
+        <div className="text-right text-sm text-slate-600">
+          <h2 className="text-lg font-bold text-slate-900">
+            {companyInfo.name}
+          </h2>
+          <p>{companyInfo.address}</p>
+          <p>{companyInfo.phone}</p>
+          <p>{companyInfo.email}</p>
+        </div>
+      </div>
+
+      <div className="mb-6 grid gap-6 md:grid-cols-2">
+        <div>
+          <h3 className="mb-2 font-bold text-blue-700">Bill To</h3>
+          <p className="font-semibold text-slate-900">
+            {documentViewModal.customer || "-"}
+          </p>
+          <p className="text-sm text-slate-500">
+            {documentViewModal.notes || ""}
+          </p>
+        </div>
+
+        <div className="text-sm md:text-right">
+          <p>
+            <strong>Invoice No:</strong>{" "}
+            {documentViewModal.reference || `DOC-${documentViewModal.id}`}
+          </p>
+          <p>
+            <strong>Date:</strong>{" "}
+            {documentViewModal.createdAt || "-"}
+          </p>
+          <p>
+            <strong>Due Date:</strong>{" "}
+            {documentViewModal.dueDate || "-"}
+          </p>
+          <p>
+            <strong>Status:</strong>{" "}
+            {documentViewModal.status || "Pending"}
+          </p>
+        </div>
+      </div>
+
+      <table className="mb-6 w-full border-collapse text-sm">
+        <thead>
+          <tr className="bg-blue-600 text-white">
+            <th className="border border-blue-600 px-3 py-2 text-left">Item</th>
+            <th className="border border-blue-600 px-3 py-2 text-left">Description</th>
+            <th className="border border-blue-600 px-3 py-2 text-center">Qty</th>
+            <th className="border border-blue-600 px-3 py-2 text-right">Rate</th>
+            <th className="border border-blue-600 px-3 py-2 text-right">Amount</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td className="border px-3 py-2">
+              {documentViewModal.title || "-"}
+            </td>
+            <td className="border px-3 py-2">
+              {documentViewModal.itemDetails || "-"}
+            </td>
+            <td className="border px-3 py-2 text-center">
+              {documentViewModal.quantity || 1}
+            </td>
+            <td className="border px-3 py-2 text-right">
+              {formatCurrency(documentViewModal.unitPrice || documentViewModal.amount || 0)}
+            </td>
+            <td className="border px-3 py-2 text-right">
+              {formatCurrency(documentViewModal.amount || 0)}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div className="mb-8 flex justify-end">
+        <div className="w-full max-w-sm space-y-2 text-sm">
+          <div className="flex justify-between">
+            <span>Subtotal</span>
+            <strong>{formatCurrency(documentViewModal.amount || 0)}</strong>
+          </div>
+
+          <div className="flex justify-between">
+            <span>Discount</span>
+            <strong>{formatCurrency(documentViewModal.discount || 0)}</strong>
+          </div>
+
+          <div className="border-t pt-2 flex justify-between text-lg font-bold">
+            <span>Total</span>
+            <span>
+              {formatCurrency(
+                Number(documentViewModal.amount || 0) -
+                  Number(documentViewModal.discount || 0)
+              )}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-10 flex justify-end">
+        <div className="w-64 text-center">
+          <div className="mb-2 border-t border-slate-700"></div>
+          <p className="text-sm font-semibold">Authorized Signature</p>
+        </div>
+      </div>
+
+      <div className="mt-8 rounded-2xl bg-blue-50 p-4 text-center text-sm font-medium text-blue-700">
+        Thank you for your business!
+      </div>
+
+      <div className="mt-6 flex flex-wrap justify-end gap-3">
+        <AppButton
+          variant="outline"
+          onClick={() => printOperationDocument(documentViewModal)}
+        >
+          Print
+        </AppButton>
+
+        <AppButton onClick={() => setDocumentViewModal(null)}>
+          Close
+        </AppButton>
+      </div>
+    </div>
   </div>
 )}
 
