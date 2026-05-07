@@ -798,7 +798,7 @@ const operationTypes = [
   "Customer Invoice",
   "Job Order",
   "Factory Job Order Sheet",
-  "Staff Service Charge Calculator",
+  "Staff Service Charge",
   "Scheduled Payment",
   "Rent",
   "Tax",
@@ -1395,17 +1395,20 @@ Thank you.`
             }
   
             .company-name {
-              font-size: 30px;
+              font-size: 40px;
               font-weight: bold;
               color: #2563eb;
               margin-bottom: 10px;
             }
   
             .invoice-title {
-              font-size: 42px;
+              font-size: 35px;
               font-weight: bold;
               color: #2563eb;
-            }
+               text-align: right;
+              width: 100%;
+              margin-left: auto;
+              }
   
             .section-title {
               font-size: 20px;
@@ -1483,7 +1486,6 @@ Thank you.`
   
         <body>
           <div class="invoice-container">
-  
             <div class="top-header">
               <div>
                 <div class="company-name">
@@ -1508,11 +1510,11 @@ Thank you.`
                 <div>${doc.customer || "-"}</div>
               </div>
   
-              <div>
-                <div><strong>Reference:</strong> ${doc.reference || "-"}</div>
-                <div><strong>Date:</strong> ${doc.createdAt || "-"}</div>
-                <div><strong>Due Date:</strong> ${doc.dueDate || "-"}</div>
-                <div><strong>Status:</strong> ${doc.status || "Pending"}</div>
+              <div style="margin-left:auto; text-align:right;">
+              <div><strong>Reference:</strong> ${doc.reference || "-"}</div>
+              <div><strong>Date:</strong> ${doc.createdAt || "-"}</div>
+              <div><strong>Due Date:</strong> ${doc.dueDate || "-"}</div>
+              <div><strong>Status:</strong> ${doc.status || "Pending"}</div>
               </div>
   
             </div>
@@ -1540,7 +1542,7 @@ Thank you.`
             <div class="totals">
 
   ${
-    doc.type === "Staff Service Charge Calculator"
+    doc.type === "Staff Service Charge"
       ? `
         <div class="totals-row">
           <span>Service Amount</span>
@@ -3576,7 +3578,7 @@ function handleScanValue(rawValue) {
               />
             </Field>
   
-            {operationForm.type === "Staff Service Charge Calculator" && (
+            {operationForm.type === "Staff Service Charge" && (
               <div className="rounded-2xl bg-slate-50 p-4">
                 <div className="grid gap-4 md:grid-cols-3">
                   <Field label="Service Amount">
@@ -4624,7 +4626,7 @@ function handleScanValue(rawValue) {
         <button
           type="button"
           onClick={handleLogout}
-          className="flex w-full items-center justify-center rounded-2xl border border-rose-200 px-4 py-3 text-rose-600 hover:bg-rose-50"
+          className="ml-8 flex w-[130px] items-center justify-center rounded-2xl border border-rose-200 px-4 py-2 text-rose-600 hover:bg-rose-50"
         >
           Log Out
         </button>
@@ -4639,7 +4641,7 @@ function handleScanValue(rawValue) {
       setLoginOpen(true);
     }, 150);
   }}
-  className="flex w-full items-center justify-center rounded-2xl bg-violet-600 px-4 py-3 text-white"
+  className="ml-8 flex w-[130px] items-center justify-center rounded-xl bg-violet-600 px-4 py-3 text-sm text-white"
 >
   Log In
 </button>
@@ -4651,7 +4653,7 @@ function handleScanValue(rawValue) {
       <button
         type="button"
         onClick={() => setSettingsOpen(true)}
-        className="flex w-full items-center justify-between rounded-2xl border border-slate-200 px-4 py-3 text-left text-slate-600 hover:bg-slate-50"
+        className="ml-8 flex w-[220px] items-center justify-between rounded-2xl border border-slate-200 px-4 py-3 text-left text-slate-600 hover:bg-slate-50"
       >
         <span className="flex items-center gap-3">
           <Settings className="h-5 w-5" />
@@ -5412,28 +5414,72 @@ function handleScanValue(rawValue) {
       </table>
 
       <div className="mb-8 flex justify-end">
-        <div className="w-full max-w-sm space-y-2 text-sm">
-          <div className="flex justify-between">
-            <span>Subtotal</span>
-            <strong>{formatCurrency(documentViewModal.amount || 0)}</strong>
-          </div>
+  <div className="w-full md:w-[380px] ml-auto space-y-2 text-sm text-right">
 
-          <div className="flex justify-between">
-            <span>Discount</span>
-            <strong>{formatCurrency(documentViewModal.discount || 0)}</strong>
-          </div>
-
-          <div className="border-t pt-2 flex justify-between text-lg font-bold">
-            <span>Total</span>
-            <span>
-              {formatCurrency(
-                Number(documentViewModal.amount || 0) -
-                  Number(documentViewModal.discount || 0)
-              )}
-            </span>
-          </div>
+    {documentViewModal.type === "Staff Service Charge" ? (
+      <>
+        <div className="flex justify-between gap-8">
+          <span>Service Amount</span>
+          <strong>
+            {formatCurrency(documentViewModal.serviceAmount || 0)}
+          </strong>
         </div>
-      </div>
+
+        <div className="flex justify-between gap-8">
+          <span>Staff Share %</span>
+          <strong>
+            {documentViewModal.staffShare || 0}%
+          </strong>
+        </div>
+
+        <div className="flex justify-between gap-8">
+          <span>Deductions</span>
+          <strong>
+            {formatCurrency(documentViewModal.deductions || 0)}
+          </strong>
+        </div>
+
+        <div className="border-t pt-2 flex justify-between text-lg font-bold">
+          <span>Final Service Charge</span>
+
+          <span>
+            {formatCurrency(
+              documentViewModal.finalServiceCharge || 0
+            )}
+          </span>
+        </div>
+      </>
+    ) : (
+      <>
+        <div className="flex justify-between gap-8">
+          <span>Subtotal</span>
+          <strong>
+            {formatCurrency(documentViewModal.amount || 0)}
+          </strong>
+        </div>
+
+        <div className="flex justify-between gap-8">
+          <span>Discount</span>
+          <strong>
+            {formatCurrency(documentViewModal.discount || 0)}
+          </strong>
+        </div>
+
+        <div className="border-t pt-2 flex justify-between text-lg font-bold">
+          <span>Total</span>
+
+          <span>
+            {formatCurrency(
+              Number(documentViewModal.amount || 0) -
+              Number(documentViewModal.discount || 0)
+            )}
+          </span>
+        </div>
+      </>
+    )}
+
+  </div>
+</div>
 
       <div className="mt-10 flex justify-end">
         <div className="w-64 text-center">
