@@ -1355,6 +1355,7 @@ Thank you.`
   }
 
   function printOperationDocument(doc) {
+    const isViewer = currentRole !== "admin";
     const popup = window.open("", "_blank");
   
     popup.document.write(`
@@ -1605,18 +1606,20 @@ Thank you.`
   
           </div>
   
-          <script>
-            window.onload = () => window.print()
-          </script>
-  
         </body>
       </html>
     `);
   
     popup.document.close();
+
+    popup.focus();
+    
+    if (currentRole === "admin") {
+      popup.print();
+    }
   }
 
-  const [settingsOpen, setSettingsOpen] = useState(false);
+const [settingsOpen, setSettingsOpen] = useState(false);
 const [lastSync, setLastSync] = useState("");
 
 function persistAll(overrides = {}) {
@@ -3644,19 +3647,25 @@ function handleScanValue(rawValue) {
   
             <div className="flex flex-wrap gap-3">
             <AppButton
+  disabled={!isLoggedIn}
   className={`${
+    !isLoggedIn
+      ? "opacity-50 cursor-not-allowed "
+      : ""
+  }${
     operationSaveStatus === "saved"
       ? "bg-emerald-500 hover:bg-emerald-600 text-white"
       : ""
   }`}
   onClick={() => {
+    if (!isLoggedIn) return;
     let updatedOrders;
   
-    if (operationForm.id) {
-      // EDIT EXISTING
-      updatedOrders = operationOrders.map((doc) =>
-        doc.id === operationForm.id
-          ? {
+           if (operationForm.id) {
+              // EDIT EXISTING
+              updatedOrders = operationOrders.map((doc) =>
+                doc.id === operationForm.id
+             ? {
               ...operationForm,
               updatedAt: new Date().toLocaleString(),
             }
@@ -3711,6 +3720,7 @@ function handleScanValue(rawValue) {
 </AppButton>
   
               <AppButton
+              disabled={currentRole !== "admin"}
                 variant="outline"
                 onClick={() => printOperationDocument(operationForm)}
               >
@@ -3819,14 +3829,20 @@ function handleScanValue(rawValue) {
                     </div>
   
                     <div className="flex flex-wrap gap-2">
-                      <AppButton
-                        variant="outline"
-                        onClick={() => setDocumentViewModal(doc)}
-                      >
-                        View
-                      </AppButton>
+                    <button
+  type="button"
+  onClick={(e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDocumentViewModal(doc);
+  }}
+  className="rounded-2xl border border-slate-200 px-4 py-2 font-semibold text-slate-700 hover:bg-slate-50"
+>
+  View
+</button>
   
                       <AppButton
+                      disabled={currentRole !== "admin"}
                         variant="outline"
                         onClick={() => printOperationDocument(doc)}
                       >
@@ -3835,6 +3851,7 @@ function handleScanValue(rawValue) {
 
 
 <AppButton
+disabled={currentRole !== "admin"}
   variant="outline"
   onClick={() => {
     setOperationForm(doc);
@@ -3849,9 +3866,11 @@ function handleScanValue(rawValue) {
                     "Job Order",
                     "Factory Job Order Sheet",
                     ].includes(doc.type) && (
-                     <AppButton
+                      <AppButton
                       variant="outline"
+                      disabled={currentRole !== "admin"}
                       onClick={() => {
+                        if (currentRole !== "admin") return;
                        const updated = operationOrders.map((x) =>
                        x.id === doc.id
                       ? {
@@ -3867,6 +3886,7 @@ function handleScanValue(rawValue) {
                        operationOrders: updated,
                       });
                        }}
+                       className={currentRole !== "admin" ? "opacity-50 cursor-not-allowed" : ""}
                       >
                       Mark Paid
                       </AppButton>
@@ -4547,7 +4567,7 @@ function handleScanValue(rawValue) {
   {/* HEADER */}
   <div className="border-b border-slate-200 px-6 py-7">
     <div className="flex items-center justify-between gap-4">
-      <div className="flex items-center gap-4">
+    <div className="flex items-start justify-between gap-4">
       <img
   src={imsLogo}
   alt="IMS Logo"
@@ -4555,15 +4575,15 @@ function handleScanValue(rawValue) {
 />
         
 
-        <div>
-          <p className="text-[34px] font-semibold leading-none">Inventory Management System</p>
+        <div className="flex-1 min-w-0">
+          <p className="text-[34px] font-semibold leading-none break-words">Inventory Management System</p>
           <p className="mt-2 text-xl text-slate-500">Digital IMS</p>
         </div>
       </div>
 
       <button
         onClick={() => setMobileMenuOpen(false)}
-        className="rounded-xl p-2 text-slate-500 hover:bg-slate-100 lg:hidden"
+        className="shrink-0 rounded-xl p-2 text-slate-500 hover:bg-slate-100 lg:hidden"
       >
         <X className="h-5 w-5" />
       </button>
@@ -4603,8 +4623,8 @@ function handleScanValue(rawValue) {
   </div>
 
   {/* FOOTER */}
-  <div className="px-6 pb-32 sm:pb-6">
-    <div className="rounded-3xl border border-slate-200 p-4">
+  <div className="px-6 pb-32 sm:pb-4">
+    <div className="rounded-3xl border border-slate-200 p-2">
       <div className="flex items-center gap-4">
         <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-500 text-white">
           {currentUser?.name?.[0] || "A"}
@@ -4621,12 +4641,12 @@ function handleScanValue(rawValue) {
     </div>
     </div>
 
-    <div className="mt-4 pb-20 sm:pb-6">
+    <div className="mt-4 pb-20 sm:pb-4">
       {isLoggedIn ? (
         <button
           type="button"
           onClick={handleLogout}
-          className="ml-8 flex w-[130px] items-center justify-center rounded-2xl border border-rose-200 px-4 py-2 text-rose-600 hover:bg-rose-50"
+          className="ml-8 flex w-[160px] items-center justify-center rounded-2xl border border-rose-200 px-4 py-4 text-rose-600 hover:bg-rose-100"
         >
           Log Out
         </button>
@@ -4641,7 +4661,7 @@ function handleScanValue(rawValue) {
       setLoginOpen(true);
     }, 150);
   }}
-  className="ml-8 flex w-[130px] items-center justify-center rounded-xl bg-violet-600 px-4 py-3 text-sm text-white"
+  className="ml-8 flex w-[160px] items-center justify-center rounded-2xl bg-violet-600 px-4 py-4 text-sm text-white"
 >
   Log In
 </button>
@@ -4653,7 +4673,7 @@ function handleScanValue(rawValue) {
       <button
         type="button"
         onClick={() => setSettingsOpen(true)}
-        className="ml-8 flex w-[220px] items-center justify-between rounded-2xl border border-slate-200 px-4 py-3 text-left text-slate-600 hover:bg-slate-50"
+        className="ml-8 flex w-[160px] items-center justify-between rounded-2xl border border-slate-200 px-4 py-4 text-left text-slate-600 hover:bg-slate-100"
       >
         <span className="flex items-center gap-3">
           <Settings className="h-5 w-5" />
@@ -5196,32 +5216,46 @@ function handleScanValue(rawValue) {
           </div>
         )}
 
-                {settingsTab === "backup" && (
+          {settingsTab === "backup" && (
           <div className="mx-auto max-w-3xl rounded-3xl border border-slate-200 bg-white p-5">
             <h3 className="text-2xl font-semibold text-slate-900">
               Backup & Restore
             </h3>
 
-            <div className="flex gap-3 mt-4">
-              <button
-                type="button"
-                onClick={handleBackupData}
-                className="rounded-2xl bg-violet-600 px-5 py-3 font-semibold text-white"
-              >
-                Backup Data
-              </button>
+            <button
+             type="button"
+            disabled={currentRole !== "admin"}
+            onClick={() => {
+            if (currentRole !== "admin") return;
+            handleBackupData();
+            }}
+            className={`rounded-2xl px-5 py-3 font-semibold text-white ${
+             currentRole !== "admin"
+            ? "bg-violet-300 cursor-not-allowed opacity-50"
+            : "bg-violet-600"
+                  }`}
+            >
+            Backup Data
+            </button>
 
-              <button
-                type="button"
-                onClick={() =>
-                  document
-                    .getElementById("restoreBackupInput")
-                    .click()
-                }
-                className="rounded-2xl bg-slate-700 px-5 py-3 font-semibold text-white"
-              >
-                Restore Backup
-              </button>
+            <button
+              type="button"
+              disabled={currentRole !== "admin"}
+              onClick={() => {
+               if (currentRole !== "admin") return;
+
+              document
+              .getElementById("restoreBackupInput")
+              .click();
+                }}
+              className={`rounded-2xl px-5 py-3 font-semibold text-white ${
+                currentRole !== "admin"
+                ? "bg-slate-400 cursor-not-allowed opacity-50"
+                : "bg-slate-700"
+                  }`}
+                  >
+                 Restore Backup
+                </button>
 
               <input
                 type="file"
@@ -5231,14 +5265,11 @@ function handleScanValue(rawValue) {
                 onChange={handleRestoreData}
               />
             </div>
-          </div>
         )}
       </div>
-    </div>
-  </div>
+   </div>
+</div>
 )}
-
-
 
 {userFormOpen && (
   <div className="fixed inset-0 z-[1000] flex items-center justify-center overflow-y-auto bg-black/40 p-3 sm:p-4">
@@ -5416,6 +5447,7 @@ function handleScanValue(rawValue) {
       <div className="mb-8 flex justify-end">
   <div className="w-full md:w-[380px] ml-auto space-y-2 text-sm text-right">
 
+
     {documentViewModal.type === "Staff Service Charge" ? (
       <>
         <div className="flex justify-between gap-8">
@@ -5493,11 +5525,21 @@ function handleScanValue(rawValue) {
       </div>
 
       <div className="mt-6 flex flex-wrap justify-end gap-3">
-        <AppButton
-          variant="outline"
-          onClick={() => printOperationDocument(documentViewModal)}
+        
+      <AppButton
+        variant="outline"
+        disabled={currentRole !== "admin"}
+        onClick={() => {
+        if (currentRole !== "admin") return;
+        printOperationDocument(documentViewModal);
+        }}
+        className={
+        currentRole !== "admin"
+        ? "opacity-50 cursor-not-allowed"
+          : ""
+        }
         >
-          Print
+        Print
         </AppButton>
 
         <AppButton onClick={() => setDocumentViewModal(null)}>
@@ -5507,7 +5549,5 @@ function handleScanValue(rawValue) {
     </div>
   </div>
 )}
-
-    </div>
-  );
-}
+</div>
+)}
