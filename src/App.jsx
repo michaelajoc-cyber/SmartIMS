@@ -3906,7 +3906,7 @@ function handleScanValue(rawValue) {
   {styles.label}
 </span>
 
-  {currentRole === "admin, superadmin" && (
+{["admin", "superadmin"].includes(currentRole) && (
     <button
       onClick={() => {
         const confirmed = window.confirm(
@@ -4021,7 +4021,7 @@ function handleScanValue(rawValue) {
                       );
                        }}
                        
-                       className={currentRole !== "admin" ? "opacity-50 cursor-not-allowed" : ""}
+                       className={!["admin", "superadmin"].includes(currentRole) ? "opacity-50 cursor-not-allowed" : ""}
                       >
                       Mark Paid
                       </AppButton>
