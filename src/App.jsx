@@ -8,7 +8,6 @@ import jsPDF from "jspdf";
 import imsLogo from "./assets/ims-logo.png";
 import autoTable from "jspdf-autotable";
 import {
-  Gem,
   LayoutDashboard,
   Package,
   ShoppingCart,
@@ -43,122 +42,122 @@ import {
 } from "lucide-react";
 
 const GOOGLE_SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycbx9D0T7Yz2oELhaD5k607MCgcxGfG6G4qzfQUQzxR3TK82als1J-8zqcxY7LGYMhXt4IA/exec";
+  "https://script.google.com/macros/s/AKfycbwDBUKqrCstLNEXYS9Nk1lqczwiHJNHSFyytqmVyqnVV8OLVn8CcgdzgqVH6dMGeMS5Tw/exec";
 
 const initialItems = [
   {
-    id: "RNG-001",
-    name: "Diamond Solitaire Ring",
-    category: "Rings",
-    material: "Gold 18K",
-    price: 2500,
-    stock: 7,
-    minStock: 3,
-    capacity: 10,
+    id: "PRD-001",
+    name: "Wireless Keyboard",
+    category: "Electronics",
+    material: "Plastic",
+    price: 1200,
+    stock: 15,
+    minStock: 5,
+    capacity: 30,
     barcode: "8901234567890",
-    location: "A1-03",
-    weight: "3.25g",
-    stone: "1.00ct, VS1, G, Excellent",
-    supplier: "Diamond House",
-    supplierEmail: "orders@diamondhouse.com",
-    ringSize: "6.5",
-    description: "18K gold solitaire ring with certified diamond",
+    location: "A1-01",
+    weight: "0.8kg",
+    variant: "Bluetooth",
+    size: "Standard",
+    specification: "Rechargeable, USB-C",
+    supplier: "Tech Supplier",
+    supplierEmail: "supplier@example.com",
+    description: "Wireless rechargeable keyboard for office or retail use",
     dateAdded: "2026-05-08",
     updatedAt: "2026-05-12",
-    image:
-      "https://images.unsplash.com/photo-1617038220319-276d3cfab638?auto=format&fit=crop&w=600&q=80",
+    image: "",
     isDeleted: false,
   },
   {
-    id: "NKL-001",
-    name: "Pearl Necklace",
-    category: "Necklaces",
-    material: "Silver 925",
-    price: 850,
-    stock: 2,
-    minStock: 4,
-    capacity: 15,
+    id: "PRD-002",
+    name: "Motorcycle Helmet",
+    category: "Motorcycle Parts",
+    material: "ABS Plastic",
+    price: 2500,
+    stock: 8,
+    minStock: 3,
+    capacity: 20,
     barcode: "8901234567891",
-    location: "B2-01",
-    weight: "12.4g",
-    stone: "Freshwater pearls",
-    supplier: "Pearl House",
-    supplierEmail: "orders@pearlhouse.com",
-    ringSize: "—",
-    description: "Elegant pearl necklace with silver clasp",
-    dateAdded: "2024-04-22",
-    updatedAt: "2024-05-10",
-    image:
-      "https://images.unsplash.com/photo-1611652022419-a9419f74343d?auto=format&fit=crop&w=600&q=80",
+    location: "B1-03",
+    weight: "1.2kg",
+    variant: "Full Face",
+    size: "Large",
+    specification: "DOT Certified",
+    supplier: "Moto Supplier",
+    supplierEmail: "supplier@example.com",
+    description: "Protective motorcycle helmet",
+    dateAdded: "2026-05-08",
+    updatedAt: "2026-05-12",
+    image: "",
     isDeleted: false,
   },
   {
-    id: "EAR-001",
-    name: "Sapphire Drop Earrings",
-    category: "Earrings",
-    material: "White Gold",
-    price: 1200,
-    stock: 0,
-    minStock: 3,
-    capacity: 8,
+    id: "PRD-003",
+    name: "Cotton T-Shirt",
+    category: "Clothing",
+    material: "Cotton",
+    price: 350,
+    stock: 25,
+    minStock: 10,
+    capacity: 50,
     barcode: "8901234567892",
-    location: "C1-08",
-    weight: "4.8g",
-    stone: "Blue sapphire pair",
-    supplier: "Azure Gems",
-    supplierEmail: "orders@azuregems.com",
-    ringSize: "—",
-    description: "White gold earrings with sapphire drops",
-    dateAdded: "2024-03-19",
-    updatedAt: "2024-05-09",
-    image:
-      "https://images.unsplash.com/photo-1635767798638-3e25273a8236?auto=format&fit=crop&w=600&q=80",
+    location: "C2-04",
+    weight: "0.2kg",
+    variant: "Round Neck",
+    size: "Medium",
+    specification: "Black",
+    supplier: "Apparel Supplier",
+    supplierEmail: "supplier@example.com",
+    description: "Basic cotton t-shirt",
+    dateAdded: "2026-05-08",
+    updatedAt: "2026-05-12",
+    image: "",
     isDeleted: false,
   },
   {
-    id: "BRC-001",
-    name: "Tennis Bracelet",
-    category: "Bracelets",
-    material: "Platinum",
-    price: 4500,
+    id: "PRD-004",
+    name: "Bicycle Tire",
+    category: "Bicycle Parts",
+    material: "Rubber",
+    price: 650,
     stock: 4,
-    minStock: 2,
-    capacity: 5,
+    minStock: 5,
+    capacity: 25,
     barcode: "8901234567893",
-    location: "D4-02",
-    weight: "8.9g",
-    stone: "Round brilliant set",
-    supplier: "Platinum Line",
-    supplierEmail: "orders@platinumline.com",
-    ringSize: "—",
-    description: "Premium platinum tennis bracelet",
-    dateAdded: "2024-05-01",
-    updatedAt: "2024-05-12",
-    image:
-      "https://images.unsplash.com/photo-1629224316810-9d8805b95e76?auto=format&fit=crop&w=600&q=80",
+    location: "D3-02",
+    weight: "0.7kg",
+    variant: "Mountain Bike",
+    size: "26 inch",
+    specification: "All-terrain tread",
+    supplier: "Bike Supplier",
+    supplierEmail: "supplier@example.com",
+    description: "Replacement bicycle tire",
+    dateAdded: "2026-05-08",
+    updatedAt: "2026-05-12",
+    image: "",
     isDeleted: false,
   },
   {
-    id: "PND-001",
-    name: "Ruby Heart Pendant",
-    category: "Pendants",
-    material: "Gold 14K",
-    price: 780,
-    stock: 9,
-    minStock: 3,
-    capacity: 12,
+    id: "PRD-005",
+    name: "Office Storage Box",
+    category: "Office Supplies",
+    material: "Plastic",
+    price: 180,
+    stock: 0,
+    minStock: 6,
+    capacity: 40,
     barcode: "8901234567894",
-    location: "E3-04",
-    weight: "2.9g",
-    stone: "Natural ruby center",
-    supplier: "Ruby Atelier",
-    supplierEmail: "orders@rubyatelier.com",
-    ringSize: "—",
-    description: "Heart-shaped pendant with ruby center stone",
-    dateAdded: "2024-04-14",
-    updatedAt: "2024-05-11",
-    image:
-      "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80",
+    location: "E1-05",
+    weight: "0.5kg",
+    variant: "Stackable",
+    size: "Medium",
+    specification: "Transparent",
+    supplier: "Office Supplier",
+    supplierEmail: "supplier@example.com",
+    description: "General-purpose storage box",
+    dateAdded: "2026-05-08",
+    updatedAt: "2026-05-12",
+    image: "",
     isDeleted: false,
   },
 ];
@@ -166,8 +165,8 @@ const initialItems = [
 const initialLogs = [
   {
     id: 1,
-    sku: "RNG-001",
-    itemName: "Diamond Solitaire Ring",
+    sku: "PRD-001",
+    itemName: "Wireless Keyboard",
     previousQty: 5,
     change: 2,
     newQty: 7,
@@ -178,8 +177,8 @@ const initialLogs = [
   },
   {
     id: 2,
-    sku: "NKL-001",
-    itemName: "Pearl Necklace",
+    sku: "PRD-003",
+    itemName: "Cotton T-Shirt",
     previousQty: 5,
     change: -3,
     newQty: 2,
@@ -195,8 +194,8 @@ const initialUsers = [];
 const initialSales = [
   {
     id: 1,
-    sku: "NKL-001",
-    itemName: "Pearl Necklace",
+    sku: "PRD-003",
+    itemName: "Cotton T-Shirt",
     quantity: 1,
     price: 850,
     total: 850,
@@ -208,12 +207,15 @@ const initialSales = [
 
 const categories = [
   "All",
-  "Rings",
-  "Necklaces",
-  "Earrings",
-  "Bracelets",
-  "Pendants",
-  "Gems",
+  "Electronics",
+  "Clothing",
+  "Motorcycle Parts",
+  "Bicycle Parts",
+  "Accessories",
+  "Office Supplies",
+  "Warehouse Items",
+  "Tools",
+  "Others",
 ];
 
 const navItems = [
@@ -226,6 +228,19 @@ const navItems = [
 ];
 
 const roles = {
+  superadmin: {
+    label: "Super Admin",
+    canEditPrice: true,
+    canEditStock: true,
+    canDelete: true,
+    canViewLogs: true,
+    canReorder: true,
+    canCreateItem: true,
+    canEditItem: true,
+    canManageUsers: true,
+    canSync: true,
+    canProcessSales: true,
+  },
   admin: {
     label: "Admin",
     canEditPrice: true,
@@ -270,7 +285,7 @@ const roles = {
 const emptyItemForm = {
   id: "",
   name: "",
-  category: "Rings",
+  category: "Electronics",
   material: "",
   price: "",
   stock: "",
@@ -279,10 +294,11 @@ const emptyItemForm = {
   barcode: "",
   location: "",
   weight: "",
-  stone: "",
+  variant: "",
+  size: "",
+  specification: "",
   supplier: "",
   supplierEmail: "",
-  ringSize: "—",
   description: "",
   dateAdded: new Date().toLocaleString("sv-SE", {
     timeZone: "Asia/Bangkok"
@@ -310,7 +326,7 @@ const emptyUserForm = {
   isDeleted: false,
 };
 
-const STORAGE_KEY = "jewelryIMSData";
+const STORAGE_KEY = "smartIMSData";
 
 function getSavedData() {
   try {
@@ -343,9 +359,9 @@ function normalizeUserIdentity(user = {}) {
 function isSampleUser(user = {}) {
   const sampleNames = ["Admin User", "Warehouse Staff", "Manager Viewer"];
   const sampleUsernames = [
-    "admin@jewelryims.com",
-    "warehouse@jewelryims.com",
-    "viewer@jewelryims.com",
+    "admin@smartims.com",
+    "staff@smartims.com",
+    "viewer@smartims.com",
   ];
   const identity = String(user.username || user.email || "").toLowerCase();
   return sampleNames.includes(user.name) || sampleUsernames.includes(identity);
@@ -526,6 +542,7 @@ function Field({ label, children }) {
 
 
 export default function App() {
+  const isAdminRoute = window.location.pathname === "/admin";
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState("Dashboard");
   const [activeDashboardMetric, setActiveDashboardMetric] = useState("Inventory Value");
@@ -575,7 +592,7 @@ export default function App() {
     const a = document.createElement("a");
   
     a.href = url;
-    a.download = `backup-${Date.now()}.json`;
+    a.download = `smartims-backup-${Date.now()}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -594,7 +611,7 @@ export default function App() {
     XLSX.utils.book_append_sheet(workbook, salesSheet, "Sales");
     XLSX.utils.book_append_sheet(workbook, logsSheet, "Logs");
   
-    XLSX.writeFile(workbook, `inventory-report-${Date.now()}.xlsx`);
+    XLSX.writeFile(workbook, `smartims-report-${Date.now()}.xlsx`);
   };
   
   const exportPDFReport = () => {
@@ -616,7 +633,7 @@ export default function App() {
       ]),
     });
   
-    doc.save(`sales-report-${Date.now()}.pdf`);
+    doc.save(`smartims-sales-report-${Date.now()}.pdf`);
   };
   const handleRestoreData = (event) => {
     const file = event.target.files[0];
@@ -630,7 +647,7 @@ export default function App() {
         const data = JSON.parse(e.target.result);
   
         localStorage.setItem(
-          "jewelryIMSData",
+          STORAGE_KEY,
           JSON.stringify(data)
         );
   
@@ -807,7 +824,7 @@ const operationTypes = [
 ];
 
 const companyInfo = {
-  name: "Your Company Name",
+  name: "SmartIMS",
   address: "Street Address, City, Zip Code",
   phone: "Phone Number",
   email: "Email Address",
@@ -872,6 +889,9 @@ const companyInfo = {
         .filter((item) => item.isDeleted !== true && item.isDeleted !== "true")
         .map((item) => ({
           ...item,
+          variant: item.variant ?? item.stone ?? "",
+          size: item.size ?? item.ringSize ?? "",
+          specification: item.specification ?? "",
           stock: Number(item.stock || 0),
           minStock: Number(item.minStock || 1),
           capacity: Number(item.capacity || 0),
@@ -890,7 +910,7 @@ const companyInfo = {
     return enrichedItems.filter((item) => {
       const matchCategory = category === "All" || item.category === category;
       const haystack =
-        `${item.id} ${item.name} ${item.material} ${item.category} ${item.status}`.toLowerCase();
+        `${item.id} ${item.name} ${item.material} ${item.category} ${item.variant || ""} ${item.size || ""} ${item.specification || ""} ${item.status}`.toLowerCase();
       return matchCategory && haystack.includes(search.toLowerCase());
     });
   }, [enrichedItems, category, search]);
@@ -1138,8 +1158,9 @@ const companyInfo = {
       supplierEmail: row.supplierEmail || row["Supplier Email"] || "",
       location: row.location || row.Location || "",
       weight: row.weight || row.Weight || "",
-      stone: row.stone || row.Stone || "",
-      ringSize: row.ringSize || row["Ring Size"] || "—",
+      variant: row.variant || row.Variant || row.stone || row.Stone || "",
+      size: row.size || row.Size || row.ringSize || row["Size"] || row["Ring Size"] || "",
+      specification: row.specification || row.Specification || "",
       description: row.description || row.Description || "",
       dateAdded: row.dateAdded || row["Date Added"] || new Date().toLocaleString("sv-SE", {
         timeZone: "Asia/Bangkok"
@@ -1639,42 +1660,74 @@ function persistAll(overrides = {}) {
 
 async function pushAllToSheets(nextData = {}, extra = {}) {
   const dataToSave = {
-    items: nextData.items ?? items ?? [],
-    logs: nextData.logs ?? logs ?? [],
-    users: nextData.users ?? users ?? [],
-    sales: nextData.sales ?? sales ?? [],
-    operationOrders: nextData.operationOrders ?? operationOrders ?? [],
+    items: Array.isArray(nextData.items) ? nextData.items : items || [],
+    logs: Array.isArray(nextData.logs) ? nextData.logs : logs || [],
+    users: Array.isArray(nextData.users) ? nextData.users : users || [],
+    sales: Array.isArray(nextData.sales) ? nextData.sales : sales || [],
+    operationOrders: Array.isArray(nextData.operationOrders)
+      ? nextData.operationOrders
+      : operationOrders || [],
   };
 
-  saveLocalData({ ...dataToSave, currentRole, currentUserEmail, isLoggedIn });
+  console.log("SMARTIMS SYNC DATA:", dataToSave);
 
-  if (!GOOGLE_SCRIPT_URL) {
-    setSyncStatus("Saved locally; Google Script URL not set");
-    setSyncError("");
-    return false;
-  }
+  saveLocalData({
+    ...dataToSave,
+    currentRole,
+    currentUserEmail,
+    isLoggedIn,
+  });
 
   try {
     setSyncBusy(true);
     setSyncError("");
     setSyncStatus("Saving locally and syncing to Google Sheets...");
 
+    const cleanedItems = dataToSave.items.map((item) => ({
+      ...item,
+    
+      // prevent oversized Google Sheet cells
+      image:
+        typeof item.image === "string" &&
+        item.image.length > 40000
+          ? ""
+          : item.image,
+    
+      qrCode:
+        typeof item.qrCode === "string" &&
+        item.qrCode.length > 40000
+          ? ""
+          : item.qrCode,
+    
+      description:
+        typeof item.description === "string"
+          ? item.description.slice(0, 5000)
+          : item.description,
+    }));
+
     await syncToGoogleSheet({
       action: "syncAllData",
-      payload: dataToSave,
-      items: dataToSave.items,
+    
+      payload: {
+        ...dataToSave,
+        items: cleanedItems,
+      },
+    
+      items: cleanedItems,
       logs: dataToSave.logs,
       users: dataToSave.users,
       sales: dataToSave.sales,
-      operationOrders: dataToSave.operationOrders,
+      operationOrders: dataToSave.operationOrders || [],
+      documents: dataToSave.operationOrders || [],
+    
       lastAction: extra.action || "syncAllData",
       item: extra.item || null,
       user: extra.user || null,
       sale: extra.sale || null,
       log: extra.log || null,
-      timestamp: new Date().toLocaleString("sv-SE", {
-        timeZone: "Asia/Bangkok"
-      }).replace(" ", "T"),
+      timestamp: new Date()
+        .toLocaleString("sv-SE", { timeZone: "Asia/Bangkok" })
+        .replace(" ", "T"),
     });
 
     const time = new Date().toLocaleTimeString();
@@ -1682,7 +1735,7 @@ async function pushAllToSheets(nextData = {}, extra = {}) {
     setSyncStatus(`Synced to Google Sheets at ${time}`);
     return true;
   } catch (error) {
-    console.error(error);
+    console.error("SYNC ERROR:", error);
     setSyncError(error?.message || "Google Sheets sync failed");
     setSyncStatus("Saved locally; Google Sheets sync pending");
     return false;
@@ -1690,7 +1743,6 @@ async function pushAllToSheets(nextData = {}, extra = {}) {
     setSyncBusy(false);
   }
 }
-
 async function handleManualSync() {
   await pushAllToSheets({ items, logs, users, sales, operationOrders }, { action: "syncAllData" });
 }
@@ -1729,25 +1781,43 @@ const updatedItems =
         String(item.id) === String(normalized.id) ? normalized : item
       );
 
-const editLog =
-  itemFormMode === "edit"
-    ? {
-        id: Date.now(),
-        sku: normalized.id,
-        itemName: normalized.name,
-        previousQty: Number(itemForm.originalStock ?? oldStock),
-        change: Number(itemForm.stock ?? 0) - Number(itemForm.originalStock ?? oldStock),
-        newQty: Number(itemForm.stock ?? 0),
-        reason: "Item edited",
-        type: "edit",
-        updatedBy: currentUser?.name || currentUserEmail || "Admin",
-        timestamp: new Date()
-          .toLocaleString("sv-SE", { timeZone: "Asia/Bangkok" })
-          .replace(" ", "T"),
-      }
-    : null;
+      const itemLog =
+      itemFormMode === "add"
+        ? {
+            id: Date.now(),
+            sku: normalized.id,
+            itemName: normalized.name,
+            previousQty: 0,
+            change: Number(normalized.stock || 0),
+            newQty: Number(normalized.stock || 0),
+            reason: "Item added",
+            type: "add",
+            updatedBy: currentUser?.name || currentUserEmail || "Admin",
+            timestamp: new Date()
+              .toLocaleString("sv-SE", { timeZone: "Asia/Bangkok" })
+              .replace(" ", "T"),
+          }
+        : itemFormMode === "edit"
+        ? {
+            id: Date.now(),
+            sku: normalized.id,
+            itemName: normalized.name,
+            previousQty: Number(itemForm.originalStock ?? oldStock),
+            change:
+              Number(itemForm.stock ?? 0) -
+              Number(itemForm.originalStock ?? oldStock),
+            newQty: Number(itemForm.stock ?? 0),
+            reason: "Item edited",
+            type: "edit",
+            updatedBy: currentUser?.name || currentUserEmail || "Admin",
+            timestamp: new Date()
+              .toLocaleString("sv-SE", { timeZone: "Asia/Bangkok" })
+              .replace(" ", "T"),
+          }
+        : null;
+    
+    const updatedLogs = itemLog ? [itemLog, ...logs] : logs;
 
-const updatedLogs = editLog ? [editLog, ...logs] : logs;
 
   setItems(updatedItems);
   setLogs(updatedLogs);
@@ -2418,7 +2488,7 @@ function handleScanValue(rawValue) {
     e.preventDefault();
 
     if (!isLoggedIn || !currentUser) {
-      setLoginError("Please log in first.");
+      setLoginError("Please use an authorized account first.");
       return;
     }
 
@@ -2530,7 +2600,7 @@ function handleScanValue(rawValue) {
           title="Inventory Value"
           value={formatCurrency(totalValue)}
           subtitle="Current total value"
-          icon={Gem}
+          icon={Package}
           active={activeDashboardMetric === "Inventory Value"}
           onClick={() => openMetricView("Inventory Value")}
         />
@@ -2723,12 +2793,12 @@ function handleScanValue(rawValue) {
   );
 
   const renderInventory = () => (
-     <div className="min-w-0 overflow-hidden transition-all duration-300"> 
+     <div className="p-4 sm:p-0 xl:p-0"> 
         <div className="p-4 sm:p-6 xl:p-8">
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center justify-center gap-4 mb-6">
   <button
     onClick={() => setMobileMenuOpen(true)}
-    className="rounded-2xl border border-slate-200 p-3 text-slate-600 lg:hidden"
+    className="rounded-2xl w-12 h-12 border border-slate-200 p-3 text-slate-600 lg:hidden"
   >
     <Menu className="h-5 w-5" />
   </button>
@@ -2744,7 +2814,7 @@ function handleScanValue(rawValue) {
   </div>
 
 
-          <div className="flex justify-end pt-2 mb-2">
+          <div className="flex justify-end self-start -mt-1 ml-auto pr-2">
               <AppButton
                 className="h-12 w-full px-5 shrink-0 "
                 onClick={openAddItem}
@@ -2834,7 +2904,7 @@ function handleScanValue(rawValue) {
                                 className="h-full w-full object-cover"
                               />
                             ) : (
-                              <Gem className="h-6 w-6 text-slate-400" />
+                              <Package className="h-6 w-6 text-slate-400" />
                             )}
                           </div>
                         </button>
@@ -2991,7 +3061,7 @@ function handleScanValue(rawValue) {
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center bg-slate-50">
-                  <Gem className="h-10 w-10 text-slate-400" />
+                  <Package className="h-10 w-10 text-slate-400" />
                 </div>
               )}
             </div>
@@ -3103,7 +3173,7 @@ function handleScanValue(rawValue) {
             Restock Form
           </h1>
           <p className="mt-1 text-slate-500">
-            View stock adjustments. Staff login is required to save changes
+            View stock adjustments. Staff account is required to save changes
           </p>
         </div>
       </div>
@@ -3216,7 +3286,7 @@ function handleScanValue(rawValue) {
         <div>
           <h1 className="text-3xl font-semibold text-slate-900 sm:text-4xl">Sales</h1>
           <p className="mt-1 text-slate-500">
-            View sales records. Staff login is required to record a sale
+            View sales records. Staff account is required to record a sale
           </p>
         </div>
       </div>
@@ -3458,16 +3528,37 @@ function handleScanValue(rawValue) {
 
   const renderOperationHub = () => (
     <div className="p-4 sm:p-6 xl:p-8">
-      <div className="mb-6">
-        <h1 className="text-3xl font-semibold text-slate-900">
-          Operation Hub
-        </h1>
-  
-        <p className="mt-1 text-slate-500">
-          Manage invoices, job orders, dues, salaries, tax, and business operations.
-        </p>
-      </div>
-  
+      <div className="flex items-center gap-3 mb-6">
+  <button
+    onClick={() => setMobileMenuOpen(true)}
+    className="lg:hidden w-12 h-12 rounded-2xl border border-slate-200 bg-white shadow-sm flex items-center justify-center"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className="w-6 h-6"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M4 6h16M4 12h16M4 18h16"
+      />
+    </svg>
+  </button>
+
+  <div>
+    <h1 className="text-3xl font-semibold text-slate-900">
+      Operation Hub
+    </h1>
+
+    <p className="mt-1 text-slate-500">
+      Manage invoices, job orders, dues, salaries, tax, and business operations.
+    </p>
+  </div>
+</div>
       <div className="grid gap-6 xl:grid-cols-2">
   
         <div className="rounded-3xl border border-slate-200 bg-white p-5">
@@ -3657,7 +3748,8 @@ function handleScanValue(rawValue) {
       ? "bg-emerald-500 hover:bg-emerald-600 text-white"
       : ""
   }`}
-  onClick={() => {
+  onClick={async() => {
+    setOperationSaveStatus("saving");
     if (!isLoggedIn) return;
     let updatedOrders;
   
@@ -3674,12 +3766,18 @@ function handleScanValue(rawValue) {
     } else {
       // CREATE NEW
       const newDoc = {
-        ...operationForm,
         id: Date.now(),
-        reference: `DOC-${Date.now()}`,
-        createdAt: new Date().toLocaleString(),
+        type: operationForm.type,
+        title: operationForm.title,
+        customer: operationForm.customer || operationForm.title || "",
+        amount: operationForm.amount,
+        dueDate: operationForm.dueDate,
+        notes: operationForm.notes,
+        status: operationForm.status,
+        createdAt: new Date().toLocaleString("sv-SE", {
+          timeZone: "Asia/Bangkok",
+        }).replace(" ", "T"),
       };
-  
       updatedOrders = [newDoc, ...operationOrders];
     }
   
@@ -3688,6 +3786,18 @@ function handleScanValue(rawValue) {
     persistAll({
       operationOrders: updatedOrders,
     });
+    
+    await pushAllToSheets(
+      {
+        items,
+        logs,
+        users,
+        sales,
+        operationOrders: updatedOrders,
+      },
+
+      { action: "SAVE_OPERATION_ORDER" }
+    );
     setOperationForm({
       type: "Customer Invoice",
       title: "",
@@ -3706,17 +3816,20 @@ function handleScanValue(rawValue) {
       deductions: "",
       finalServiceCharge: 0,
     });
-  
+
     setOperationSaveStatus("saved");
   
     setTimeout(() => {
       setOperationSaveStatus("idle");
-    }, 1200);
+    }, 400);
   }}
+  
 >
-  {operationSaveStatus === "saved"
-    ? "Saved ✓"
-    : "Save Document"}
+{operationSaveStatus === "saving"
+  ? "Saving..."
+  : operationSaveStatus === "saved"
+  ? "Saved ✓"
+  : "Save Document"}
 </AppButton>
   
               <AppButton
@@ -3849,18 +3962,17 @@ function handleScanValue(rawValue) {
                         Print
                       </AppButton>
 
-
-<AppButton
-disabled={currentRole !== "admin"}
+                    <AppButton
+                      disabled={currentRole !== "admin"}
   variant="outline"
   onClick={() => {
     setOperationForm(doc);
     setDocumentViewModal(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }}
->
-  Edit
-</AppButton>
+                       }}
+                      >
+                      Edit
+                    </AppButton>
                       {![
                     "Customer Invoice",
                     "Job Order",
@@ -3885,7 +3997,18 @@ disabled={currentRole !== "admin"}
                         persistAll({
                        operationOrders: updated,
                       });
+                      pushAllToSheets(
+                        {
+                          items,
+                          logs,
+                          users,
+                          sales,
+                          operationOrders: updated,
+                        },
+                        { action: "UPDATE_OPERATION_STATUS" }
+                      );
                        }}
+                       
                        className={currentRole !== "admin" ? "opacity-50 cursor-not-allowed" : ""}
                       >
                       Mark Paid
@@ -3964,7 +4087,7 @@ disabled={currentRole !== "admin"}
               />
             </Field>
 
-            <Field label="Login Password">
+            <Field label="Account Password">
               <input
                 value={userForm.password}
                 type="password"
@@ -4214,10 +4337,10 @@ disabled={currentRole !== "admin"}
               />
             </Field>
 
-            <Field label="Ring Size">
+            <Field label="Size">
               <input
-                value={itemForm.ringSize}
-                onChange={(e) => setItemForm((prev) => ({ ...prev, ringSize: e.target.value }))}
+                value={itemForm.size}
+                onChange={(e) => setItemForm((prev) => ({ ...prev, size: e.target.value }))}
                 className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none"
               />
             </Field>
@@ -4314,10 +4437,18 @@ disabled={currentRole !== "admin"}
               />
             </Field>
 
-            <Field label="Stone / Gem">
+            <Field label="Variant">
               <input
-                value={itemForm.stone}
-                onChange={(e) => setItemForm((prev) => ({ ...prev, stone: e.target.value }))}
+                value={itemForm.variant}
+                onChange={(e) => setItemForm((prev) => ({ ...prev, variant: e.target.value }))}
+                className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none"
+              />
+            </Field>
+
+            <Field label="Specification">
+              <input
+                value={itemForm.specification}
+                onChange={(e) => setItemForm((prev) => ({ ...prev, specification: e.target.value }))}
                 className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none"
               />
             </Field>
@@ -4565,41 +4696,54 @@ disabled={currentRole !== "admin"}
   }`}
 >
   {/* HEADER */}
-  <div className="border-b border-slate-200 px-6 py-7">
-    <div className="flex items-center justify-between gap-4">
-    <div className="flex items-start justify-between gap-4">
+<div className="border-b border-slate-200 px-6 py-7">
+  <div className="flex items-start justify-between gap-4">
+
+    {/* LEFT SIDE */}
+    <div className="flex items-start gap-4 flex-1 min-w-0">
+
       <img
-  src={imsLogo}
-  alt="IMS Logo"
-  className="h-14 w-14 object-contain rounded-2xl"
-/>
-        
+        src={imsLogo}
+        alt="IMS Logo"
+        className="h-14 w-14 object-contain rounded-2xl shrink-0"
+      />
 
-        <div className="flex-1 min-w-0">
-          <p className="text-[34px] font-semibold leading-none break-words">Inventory Management System</p>
-          <p className="mt-2 text-xl text-slate-500">Digital IMS</p>
-        </div>
+      <div className="flex-1 min-w-0">
+      <p className="text-3xl sm:text-[34px] font-semibold leading-tight">
+          Inventory Management System
+        </p>
+
+        <p className="mt-2 text-xl text-slate-500">
+          Digital IMS
+        </p>
       </div>
-
-      <button
-        onClick={() => setMobileMenuOpen(false)}
-        className="shrink-0 rounded-xl p-2 text-slate-500 hover:bg-slate-100 lg:hidden"
-      >
-        <X className="h-5 w-5" />
-      </button>
     </div>
-  </div>
 
-  {/* USER INFO */}
+    {/* CLOSE BUTTON */}
+    <button
+      onClick={() => setMobileMenuOpen(false)}
+      className="shrink-0 rounded-xl p-2 text-slate-500 hover:bg-slate-100 lg:hidden"
+    >
+      <X className="h-6 w-6" />
+    </button>
+  </div>
+</div>
+
+  
+{/* USER INFO - hidden until an account is logged in */}
+{isLoggedIn && (
   <div className="px-6 pt-5">
-  <div className="rounded-2xl bg-slate-100 p-4 transition-all duration-100 hover:bg-slate-50">
-      <p className="text-xs text-slate-500">{isLoggedIn ? "Current User" : "View Only"}</p>
-      <div className="mt-2 flex items-center justify-between gap-3">
-        <p className="font-medium text-slate-900">{currentUser?.name || "Not logged in"}</p>
-        {isLoggedIn ? <UserRoleBadge role={currentRole} /> : <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">View Only</span>}
+    <div className="rounded-2xl bg-slate-100 p-4 transition-all duration-100 hover:bg-slate-50">
+      <p className="text-xs text-slate-500">Current User</p>
+      <div className="mt-3 flex items-center justify-between gap-3">
+        <p className="font-medium text-slate-900 break-words">
+          {currentUser?.name || "User"}
+        </p>
+        <UserRoleBadge role={currentRole} />
       </div>
     </div>
   </div>
+)}
 
   {/* NAVIGATION */}
   <div className="flex-1 space-y-3 px-6 py-6">
@@ -4623,7 +4767,7 @@ disabled={currentRole !== "admin"}
   </div>
 
   {/* FOOTER */}
-  <div className="px-6 pb-32 sm:pb-4">
+  <div className="px-6 pb-6">
     <div className="rounded-3xl border border-slate-200 p-2">
       <div className="flex items-center gap-4">
         <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-500 text-white">
@@ -4631,17 +4775,17 @@ disabled={currentRole !== "admin"}
         </div>
         <div>
           <p className="text-base font-semibold">
-            {currentUser?.name || "Not logged in"}
+            {isLoggedIn ? currentUser?.name || "User" : "SmartIMS"}
           </p>
           <p className="text-sm text-slate-500">
-            {currentUser?.email || "Please log in to make changes"}
+            {isLoggedIn ? currentUser?.email || "Account active" : "Inventory Management System"}
           </p>
         </div>
       </div>
     </div>
     </div>
 
-    <div className="mt-4 pb-20 sm:pb-4">
+    <div className="mt-4 pb-6">
       {isLoggedIn ? (
         <button
           type="button"
@@ -4650,26 +4794,27 @@ disabled={currentRole !== "admin"}
         >
           Log Out
         </button>
-      ) : (
+      ) : isAdminRoute ? (
         <button
-  type="button"
-  onClick={(e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setMobileMenuOpen(false);
-    setTimeout(() => {
-      setLoginOpen(true);
-    }, 150);
-  }}
-  className="ml-8 flex w-[160px] items-center justify-center rounded-2xl bg-violet-600 px-4 py-4 text-sm text-white"
->
-  Log In
-</button>
-      )}
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setMobileMenuOpen(false);
+            setTimeout(() => {
+              setLoginOpen(true);
+            }, 150);
+          }}
+          className="ml-8 flex w-[160px] items-center justify-center rounded-2xl bg-violet-600 px-4 py-4 text-sm text-white"
+        >
+          Admin Access
+        </button>
+      ) : null}
     </div>
 
     {/* SETTINGS BUTTON */}
-    <div className="settings-container mt-4">
+    {(isLoggedIn || isAdminRoute) && (
+    <div className="settings-container mt-2">
       <button
         type="button"
         onClick={() => setSettingsOpen(true)}
@@ -4682,6 +4827,7 @@ disabled={currentRole !== "admin"}
         <ChevronRight className="h-4 w-4" />
       </button>
     </div>
+    )}
   </div>
   
         <main className="min-w-0 bg-white pt-2">
@@ -4721,7 +4867,7 @@ disabled={currentRole !== "admin"}
                       className="h-full w-full object-cover"
                     />
                   ) : (
-                    <Gem className="h-14 w-14 text-slate-400" />
+                    <Package className="h-14 w-14 text-slate-400" />
                   )}
                 </div>
   
@@ -5035,7 +5181,7 @@ disabled={currentRole !== "admin"}
               <input type="password" value={loginForm.password} onChange={(e) => setLoginForm((prev) => ({ ...prev, password: e.target.value }))} className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none" placeholder="Enter password" />
             </Field>
             {loginError && <p className="text-sm text-rose-600">{loginError}</p>}
-            <AppButton type="submit" className="h-12 w-full">Log In</AppButton>
+            <AppButton type="submit" className="h-12 w-full">Admin Access</AppButton>
             <button type="button" onClick={() => { setLoginOpen(false); setCurrentPage("Dashboard"); }} className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50">
               Continue in View-Only Mode
             </button>
@@ -5086,10 +5232,10 @@ disabled={currentRole !== "admin"}
               <SummaryCard label="Name" value={currentUser?.name || "Not logged in"} />
               <SummaryCard label="Username" value={currentUser?.username || currentUser?.email || "View-only mode"} />
               <SummaryCard label="Role" value={isLoggedIn ? roles[currentRole]?.label || currentRole : "View Only"} />
-              <SummaryCard label="Access" value={isLoggedIn ? "Editing enabled based on role" : "View only; editing requires login"} />
+              <SummaryCard label="Access" value={isLoggedIn ? "Editing enabled based on role" : "View only"} />
             </div>
             <div className="mt-5 flex flex-wrap gap-3">
-              {isLoggedIn ? <AppButton variant="outline" onClick={handleLogout}>Log Out</AppButton> : <AppButton onClick={() => setLoginOpen(true)}>Log In</AppButton>}
+              {isLoggedIn ? <AppButton variant="outline" onClick={handleLogout}>Log Out</AppButton> : <AppButton onClick={() => setLoginOpen(true)}>Admin Access</AppButton>}
             </div>
 
             {isLoggedIn && (
@@ -5198,7 +5344,7 @@ disabled={currentRole !== "admin"}
 
         {settingsTab === "signup" && (
           <div className="mx-auto max-w-3xl rounded-3xl border border-slate-200 bg-white p-5">
-            <h3 className="text-xl font-semibold text-slate-900">Create Staff Login Account</h3>
+            <h3 className="text-xl font-semibold text-slate-900">Create Staff Account</h3>
             <p className="mt-1 text-sm text-slate-500">Only Admin can create staff accounts. Staff can later change their own password from the user settings workflow.</p>
             {(!isLoggedIn || currentRole !== "admin") && activeUsers.length > 0 ? (
               <div className="mt-4 rounded-2xl bg-amber-50 p-4 text-sm text-amber-700">Please log in as Admin first.</div>
@@ -5296,7 +5442,7 @@ disabled={currentRole !== "admin"}
       <p className="mt-2 text-sm text-slate-500">
         {activeUsers.filter((u) => u.active !== false).length === 0
           ? "Create the first Admin account to unlock editing, sales, restock, users, and sync controls."
-          : "Create a staff login account. Admin controls role and access from the Users page."}
+          : "Create a staff account. Admin controls role and access from the Users page."}
       </p>
 
       <div className="mt-4 space-y-4">
