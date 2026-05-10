@@ -664,7 +664,19 @@ export default function App() {
   const [salesReportView, setSalesReportView] = useState("daily");
   const [items, setItems] = useState(savedData?.items?.length ? savedData.items : initialItems);
   const [logs, setLogs] = useState(savedData?.logs?.length ? savedData.logs : initialLogs);
-  const [users, setUsers] = useState(savedData?.users?.length ? savedData.users : []);
+  const [users, setUsers] = useState(
+    savedData?.users?.length
+      ? savedData.users
+      : [
+          {
+            id: 1,
+            username: "superadmin",
+            password: "superadmin123",
+            role: "superadmin",
+            name: "Super Admin",
+          },
+        ]
+  );
   const [sales, setSales] = useState(savedData?.sales?.length ? savedData.sales : initialSales);
 
   const [search, setSearch] = useState("");
@@ -674,7 +686,7 @@ export default function App() {
   
   const [mobileDetailsOpen, setMobileDetailsOpen] = useState(false);
 
-  const [currentRole, setCurrentRole] = useState(savedData?.currentRole || "viewer");
+  const [currentRole, setCurrentRole] = useState(savedData?.currentRole || "superadmin");
   const [currentUserEmail, setCurrentUserEmail] = useState(
 
     savedData?.currentUserEmail || ""
@@ -4014,7 +4026,8 @@ function handleScanValue(rawValue) {
                       Mark Paid
                       </AppButton>
                       )}
-                      {currentRole === "admin" && doc.status === "Paid" && (
+                      {currentRole === "admin" 
+                      && doc.status === "Paid" && (
                         <AppButton
                          variant="outline"
                         className="border-rose-200 text-rose-600 hover:bg-rose-50"
