@@ -1647,7 +1647,7 @@ Thank you.`
 
     popup.focus();
     
-    if (currentRole === "admin") {
+    if (currentRole === "admin", "superadmin") {
       popup.print();
     }
   }
@@ -3906,7 +3906,7 @@ function handleScanValue(rawValue) {
   {styles.label}
 </span>
 
-  {currentRole === "admin" && (
+  {currentRole === "admin, superadmin" && (
     <button
       onClick={() => {
         const confirmed = window.confirm(
@@ -4026,7 +4026,7 @@ function handleScanValue(rawValue) {
                       Mark Paid
                       </AppButton>
                       )}
-                      {currentRole === "admin" 
+                      {currentRole === "admin, superadmin" 
                       && doc.status === "Paid" && (
                         <AppButton
                          variant="outline"
