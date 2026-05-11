@@ -3798,6 +3798,13 @@ function handleScanValue(rawValue) {
         dueDate: operationForm.dueDate,
         notes: operationForm.notes,
         status: operationForm.status,
+        serviceAmount: operationForm.serviceAmount || operationForm.amount || 0,
+staffShare: operationForm.staffShare || 100,
+deductions: operationForm.deductions || 0,
+finalServiceCharge:
+  ((Number(operationForm.serviceAmount || operationForm.amount || 0) *
+    (Number(operationForm.staffShare || 100) / 100)) -
+    Number(operationForm.deductions || 0)),
         createdAt: new Date().toLocaleString("sv-SE", {
           timeZone: "Asia/Bangkok",
         }).replace(" ", "T"),
