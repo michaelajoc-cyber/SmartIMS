@@ -5359,7 +5359,7 @@ function handleScanValue(rawValue) {
           <div className="mx-auto max-w-3xl rounded-3xl border border-slate-200 bg-white p-5">
             <h3 className="text-xl font-semibold text-slate-900">Create Staff Account</h3>
             <p className="mt-1 text-sm text-slate-500">Only Admin can create staff accounts. Staff can later change their own password from the user settings workflow.</p>
-            {(!isLoggedIn || currentRole !== "admin") && activeUsers.length > 0 ? (
+            {(!isLoggedIn || !["admin", "superadmin"].includes(currentRole)) && activeUsers.length > 0 ? (
               <div className="mt-4 rounded-2xl bg-amber-50 p-4 text-sm text-amber-700">Please log in as Admin first.</div>
             ) : (
               <form onSubmit={saveUser} className="mt-5 space-y-4">
