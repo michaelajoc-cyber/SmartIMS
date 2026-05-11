@@ -5283,7 +5283,7 @@ function handleScanValue(rawValue) {
                     setSettingsTab("signup");
                     setUserForm(emptyUserForm);
                   }}
-                  disabled={!isLoggedIn || currentRole !== "admin"}
+                  disabled={!isLoggedIn || !["admin", "superadmin"].includes(currentRole)}
                 >
                   <UserCog className="mr-2 h-4 w-4" />
                   Add User
