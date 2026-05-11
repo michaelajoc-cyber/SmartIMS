@@ -2805,12 +2805,12 @@ function handleScanValue(rawValue) {
   );
 
   const renderInventory = () => (
-     <div className="p-4 sm:p-0 xl:p-0"> 
+     <div className="p-4 sm:p-6 xl:p-0"> 
         <div className="p-4 sm:p-6 xl:p-8">
-        <div className="flex items-center justify-center gap-4 mb-6">
+        <div className="mb-6 flex items-center gap-3">
   <button
     onClick={() => setMobileMenuOpen(true)}
-    className="rounded-2xl w-12 h-12 border border-slate-200 p-3 text-slate-600 lg:hidden"
+    className="rounded-2xl border border-slate-200 p-3 text-slate-600 lg:hidden"
   >
     <Menu className="h-5 w-5" />
   </button>
@@ -3543,7 +3543,7 @@ function handleScanValue(rawValue) {
       <div className="flex items-center gap-3 mb-6">
   <button
     onClick={() => setMobileMenuOpen(true)}
-    className="lg:hidden w-12 h-12 rounded-2xl border border-slate-200 bg-white shadow-sm flex items-center justify-center"
+    className="rounded-2xl border border-slate-200 p-3 text-slate-600 lg:hidden"
   >
     <svg
       xmlns="http://www.w3.org/2000/svg"
