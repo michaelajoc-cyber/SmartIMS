@@ -5383,9 +5383,9 @@ function handleScanValue(rawValue) {
 
             <button
              type="button"
-            disabled={currentRole !== "admin"}
+             disabled={!["admin", "superadmin"].includes(currentRole)}
             onClick={() => {
-            if (currentRole !== "admin") return;
+              if (!["admin", "superadmin"].includes(currentRole)) return;
             handleBackupData();
             }}
             className={`rounded-2xl px-5 py-3 font-semibold text-white ${
