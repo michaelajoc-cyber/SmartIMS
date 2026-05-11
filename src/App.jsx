@@ -1567,11 +1567,11 @@ Thank you.`
   
               <tbody>
                 <tr>
-                  <td>${doc.itemDetails || doc.notes || "-"}</td>
-                  <td>${doc.quantity || 1}</td>
-                  <td>${doc.unitPrice || 0}</td>
-                  <td>${doc.amount || 0}</td>
-                </tr>
+  <td>${doc.itemDetails || doc.notes || doc.title || doc.type || "-"}</td>
+  <td>${doc.quantity || 1}</td>
+  <td>฿${doc.unitPrice || doc.amount || 0}</td>
+  <td>฿${doc.amount || 0}</td>
+</tr>
               </tbody>
             </table>
   
@@ -3785,6 +3785,7 @@ function handleScanValue(rawValue) {
       // CREATE NEW
       const newDoc = {
         id: Date.now(),
+        reference: `REF-${Math.floor(100000 + Math.random() * 900000)}`,
         type: operationForm.type,
         title: operationForm.title,
         customer: operationForm.customer || operationForm.title || "",
@@ -5587,32 +5588,39 @@ function handleScanValue(rawValue) {
       <table className="mb-6 w-full border-collapse text-sm">
         <thead>
           <tr className="bg-blue-600 text-white">
-            <th className="border border-blue-600 px-3 py-2 text-left">Item</th>
-            <th className="border border-blue-600 px-3 py-2 text-left">Description</th>
-            <th className="border border-blue-600 px-3 py-2 text-center">Qty</th>
-            <th className="border border-blue-600 px-3 py-2 text-right">Rate</th>
-            <th className="border border-blue-600 px-3 py-2 text-right">Amount</th>
+          <th className="border border-blue-600 px-3 py-2 text-left">Description</th>
+          <th className="border border-blue-600 px-3 py-2 text-center">Qty</th>
+          <th className="border border-blue-600 px-3 py-2 text-right">Unit Price</th>
+          <th className="border border-blue-600 px-3 py-2 text-right">Total</th>
           </tr>
         </thead>
 
         <tbody>
-          <tr>
-            <td className="border px-3 py-2">
-              {documentViewModal.title || "-"}
-            </td>
-            <td className="border px-3 py-2">
-              {documentViewModal.itemDetails || "-"}
-            </td>
-            <td className="border px-3 py-2 text-center">
-              {documentViewModal.quantity || 1}
-            </td>
-            <td className="border px-3 py-2 text-right">
-              {formatCurrency(documentViewModal.unitPrice || documentViewModal.amount || 0)}
-            </td>
-            <td className="border px-3 py-2 text-right">
-              {formatCurrency(documentViewModal.amount || 0)}
-            </td>
-          </tr>
+        <tr>
+  <td className="border px-3 py-2">
+    {documentViewModal.itemDetails ||
+      documentViewModal.notes ||
+      documentViewModal.title ||
+      documentViewModal.type ||
+      "-"}
+  </td>
+
+  <td className="border px-3 py-2 text-center">
+    {documentViewModal.quantity || 1}
+  </td>
+
+  <td className="border px-3 py-2 text-right">
+    {formatCurrency(
+      documentViewModal.unitPrice ||
+      documentViewModal.amount ||
+      0
+    )}
+  </td>
+
+  <td className="border px-3 py-2 text-right">
+    {formatCurrency(documentViewModal.amount || 0)}
+  </td>
+</tr>
         </tbody>
       </table>
 
