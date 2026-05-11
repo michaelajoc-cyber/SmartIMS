@@ -3851,7 +3851,7 @@ function handleScanValue(rawValue) {
 </AppButton>
   
               <AppButton
-              disabled={currentRole !== "admin"}
+              disabled={!["admin", "superadmin"].includes(currentRole)}
                 variant="outline"
                 onClick={() => printOperationDocument(operationForm)}
               >
@@ -3973,7 +3973,7 @@ function handleScanValue(rawValue) {
 </button>
   
                       <AppButton
-                      disabled={currentRole !== "admin"}
+                      disabled={!["admin", "superadmin"].includes(currentRole)}
                         variant="outline"
                         onClick={() => printOperationDocument(doc)}
                       >
@@ -3981,12 +3981,12 @@ function handleScanValue(rawValue) {
                       </AppButton>
 
                     <AppButton
-                      disabled={currentRole !== "admin"}
-  variant="outline"
-  onClick={() => {
-    setOperationForm(doc);
-    setDocumentViewModal(null);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+                      disabled={!["admin", "superadmin"].includes(currentRole)}
+                        variant="outline"
+                        onClick={() => {
+                        setOperationForm(doc);
+                        setDocumentViewModal(null);
+                        window.scrollTo({ top: 0, behavior: "smooth" });
                        }}
                       >
                       Edit
@@ -3998,9 +3998,9 @@ function handleScanValue(rawValue) {
                     ].includes(doc.type) && (
                       <AppButton
                       variant="outline"
-                      disabled={currentRole !== "admin"}
+                      disabled={!["admin", "superadmin"].includes(currentRole)}
                       onClick={() => {
-                        if (currentRole !== "admin") return;
+                        if (!["admin", "superadmin"].includes(currentRole)) return;
                        const updated = operationOrders.map((x) =>
                        x.id === doc.id
                       ? {
