@@ -1582,7 +1582,7 @@ Thank you.`
       ? `
         <div class="totals-row">
           <span>Service Amount</span>
-          <span>฿${doc.serviceAmount || 0}</span>
+          <span>฿${doc.serviceAmount || doc.amount || 0}</span>
         </div>
 
         <div class="totals-row">
@@ -1595,10 +1595,16 @@ Thank you.`
           <span>฿${doc.deductions || 0}</span>
         </div>
 
-        <div class="totals-row grand-total">
-          <span>Total</span>
-          <span>฿${doc.finalServiceCharge || 0}</span>
-        </div>
+        <span>
+  ฿${
+    doc.finalServiceCharge ||
+    (
+      ((doc.serviceAmount || doc.amount || 0) *
+      ((doc.staffShare || 100) / 100)) -
+      (doc.deductions || 0)
+    )
+  }
+</span>
       `
       : `
         <div class="totals-row">
