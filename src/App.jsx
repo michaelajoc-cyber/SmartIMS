@@ -562,7 +562,7 @@ export default function App() {
       ...data,
       users: cleanedUsers,
       currentUserEmail: savedUser ? savedUser.username || savedUser.email : "",
-      currentRole: savedUser ? savedUser.role || "viewer" : "viewer",
+      currentRole: savedUser ? savedUser.role || "superadmin" : "superadmin",
       isLoggedIn: Boolean(data.isLoggedIn && savedUser),
     };
 
@@ -1024,7 +1024,7 @@ const companyInfo = {
       persistAll({
         users: cleanedUsers,
         currentUserEmail: stillLoggedInUser ? stillLoggedInUser.username || stillLoggedInUser.email : "",
-        currentRole: stillLoggedInUser ? stillLoggedInUser.role || "viewer" : "viewer",
+        currentRole: stillLoggedInUser ? stillLoggedInUser.role || "superadmin" : "superadmin",
         isLoggedIn: Boolean(stillLoggedInUser && isLoggedIn),
       });
     }
