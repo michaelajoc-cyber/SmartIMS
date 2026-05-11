@@ -4807,7 +4807,7 @@ function handleScanValue(rawValue) {
         >
           Log Out
         </button>
-      ) : isAdminRoute ? (
+      ) : (
         <button
           type="button"
           onClick={(e) => {
@@ -4822,11 +4822,11 @@ function handleScanValue(rawValue) {
         >
           Admin Access
         </button>
-      ) : null}
+      )}
     </div>
 
     {/* SETTINGS BUTTON */}
-    {(isLoggedIn || isAdminRoute) && (
+    
     <div className="settings-container mt-2">
       <button
         type="button"
@@ -4840,7 +4840,7 @@ function handleScanValue(rawValue) {
         <ChevronRight className="h-4 w-4" />
       </button>
     </div>
-    )}
+
   </div>
   
         <main className="min-w-0 bg-white pt-2">
