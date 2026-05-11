@@ -240,6 +240,7 @@ const roles = {
     canManageUsers: true,
     canSync: true,
     canProcessSales: true,
+    canCreateAdminAccount: true,
   },
   admin: {
     label: "Admin",
@@ -253,6 +254,7 @@ const roles = {
     canManageUsers: true,
     canSync: true,
     canProcessSales: true,
+    canCreateAdminAccount: false,
   },
   warehouse: {
     label: "Staff",
@@ -313,7 +315,7 @@ const emptySaleForm = {
   sku: "",
   quantity: 1,
   customer: "",
-  soldBy: "Warehouse Staff",
+  soldBy: "",
 };
 
 const emptyUserForm = {
@@ -321,7 +323,7 @@ const emptyUserForm = {
   username: "",
   email: "",
   password: "",
-  role: "warehouse",
+  role: "staff",
   active: true,
   isDeleted: false,
 };
@@ -562,7 +564,7 @@ export default function App() {
       ...data,
       users: cleanedUsers,
       currentUserEmail: savedUser ? savedUser.username || savedUser.email : "",
-      currentRole: savedUser ? savedUser.role || "superadmin" : "superadmin",
+      currentRole: savedUser ? savedUser.role : "viewer",
       isLoggedIn: Boolean(data.isLoggedIn && savedUser),
     };
 
@@ -722,13 +724,13 @@ export default function App() {
     }).replace(" ", "T").slice(0, 10),
     reason: "",
     type: "restock",
-    updatedBy: "Warehouse Staff",
+    updatedBy: `${currentUserEmail || "Unknown"} (${currentRole || "staff"})`,
   });
 
   const [itemForm, setItemForm] = useState(emptyItemForm);
   const [saleForm, setSaleForm] = useState({
     ...emptySaleForm,
-    soldBy: "Warehouse Staff",
+    soldBy: currentUserEmail || currentRole || "Staff",
   });
   const [userForm, setUserForm] = useState(emptyUserForm);
   const [saleSaveStatus, setSaleSaveStatus] = useState("idle");
@@ -1307,7 +1309,7 @@ const companyInfo = {
       }).replace(" ", "T").slice(0, 10),
       reason: "",
       type: "restock",
-      updatedBy: currentUser?.name || currentUser?.username || currentUserEmail || "User",
+      updatedBy: currentUserEmail || currentRole || "Staff",
     });
     setRestockOpen(true);
   }
@@ -2061,7 +2063,11 @@ async function saveUser(e) {
       setUserSaveStatus("idle");
       return;
     }
-
+    if (userForm.role === "admin" && !roles[currentRole]?.canCreateAdminAccount) {
+      setLoginError("Only Super Admin can create Admin accounts.");
+      setUserSaveStatus("idle");
+      return;
+    }
     const cleanUsername = String(userForm.username || userForm.email || "").trim();
 
     if (!userForm.name.trim() || !cleanUsername || !userForm.password.trim()) {
@@ -2089,7 +2095,7 @@ async function saveUser(e) {
       username: cleanUsername,
       email: cleanUsername,
       password: userForm.password.trim(),
-      role: isFirstAccount ? "admin" : "warehouse",
+      role: isFirstAccount ? "admin" : userForm.role || "staff",
       active: true,
       isDeleted: false,
     };
@@ -5186,7 +5192,9 @@ function handleScanValue(rawValue) {
             <Field label="Username">
               <select value={loginForm.email || activeUsers.filter((u) => u.active !== false)[0]?.username || activeUsers.filter((u) => u.active !== false)[0]?.email || ""} onChange={(e) => setLoginForm((prev) => ({ ...prev, email: e.target.value }))} className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none">
                 {activeUsers.filter((u) => u.active !== false).map((u) => (
-                  <option key={u.id} value={u.username || u.email}>{u.name} ({roles[u.role]?.label || u.role})</option>
+                  <option key={u.id} value={u.username || u.email}>
+                  {u.name}
+                </option>
                 ))}
               </select>
             </Field>
@@ -5365,6 +5373,11 @@ function handleScanValue(rawValue) {
               <form onSubmit={saveUser} className="mt-5 space-y-4">
                 <Field label="Staff Name"><input value={userForm.name} onChange={(e) => setUserForm((prev) => ({ ...prev, name: e.target.value }))} className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none" /></Field>
                 <Field label="Username"><input value={userForm.username || userForm.email} onChange={(e) => setUserForm((prev) => ({ ...prev, username: e.target.value, email: e.target.value }))} className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none" /></Field>
+                <Field label="Role"><select value={userForm.role || "staff"}onChange={(e) =>setUserForm((prev) => ({...prev,role: e.target.value,}))}className="w-full rounded-2xl border border-slate-200 px-4 py-3">{roles[currentRole]?.canCreateAdminAccount && (<option value="admin">Admin</option>)}
+                 <option value="staff">Staff</option>
+                  <option value="warehouse">Warehouse</option>
+                 </select>
+                  </Field>
                 <Field label="Temporary Password"><input type="password" value={userForm.password} onChange={(e) => setUserForm((prev) => ({ ...prev, password: e.target.value }))} className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none" /></Field>
                 {loginError && <p className="text-sm text-rose-600">{loginError}</p>}
                 <AppButton type="submit" className={`h-12 w-full ${userSaveStatus === "saved" ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-100" : ""}`} disabled={userSaveStatus === "saving"}>
@@ -5389,7 +5402,7 @@ function handleScanValue(rawValue) {
             handleBackupData();
             }}
             className={`rounded-2xl px-5 py-3 font-semibold text-white ${
-             currentRole !== "admin"
+              !["admin", "superadmin"].includes(currentRole)
             ? "bg-violet-300 cursor-not-allowed opacity-50"
             : "bg-violet-600"
                   }`}
@@ -5399,16 +5412,16 @@ function handleScanValue(rawValue) {
 
             <button
               type="button"
-              disabled={currentRole !== "admin"}
+              disabled={!["admin", "superadmin"].includes(currentRole)}
               onClick={() => {
-               if (currentRole !== "admin") return;
+                if (!["admin", "superadmin"].includes(currentRole)) return;
 
               document
               .getElementById("restoreBackupInput")
               .click();
                 }}
               className={`rounded-2xl px-5 py-3 font-semibold text-white ${
-                currentRole !== "admin"
+                !["admin", "superadmin"].includes(currentRole)
                 ? "bg-slate-400 cursor-not-allowed opacity-50"
                 : "bg-slate-700"
                   }`}
@@ -5687,13 +5700,13 @@ function handleScanValue(rawValue) {
         
       <AppButton
         variant="outline"
-        disabled={currentRole !== "admin"}
+        disabled={!["admin", "superadmin"].includes(currentRole)}
         onClick={() => {
-        if (currentRole !== "admin") return;
+          if (!["admin", "superadmin"].includes(currentRole)) return;
         printOperationDocument(documentViewModal);
         }}
         className={
-        currentRole !== "admin"
+          !["admin", "superadmin"].includes(currentRole)
         ? "opacity-50 cursor-not-allowed"
           : ""
         }
