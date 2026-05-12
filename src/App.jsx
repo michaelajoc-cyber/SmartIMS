@@ -1567,7 +1567,7 @@ Thank you.`
   
               <tbody>
                 <tr>
-  <td>${doc.itemDetails || doc.notes || doc.title || doc.type || "-"}</td>
+  <td>${doc.itemDetails || doc.type || "-"}</td>
   <td>${doc.quantity || 1}</td>
   <td>฿${doc.unitPrice || doc.amount || 0}</td>
   <td>฿${doc.amount || 0}</td>
@@ -5610,9 +5610,9 @@ finalServiceCharge:
         <tbody>
         <tr>
   <td className="border px-3 py-2">
-    {documentViewModal.itemDetails ||
-      documentViewModal.notes ||
-      documentViewModal.title ||
+    {documentViewModal.description ||
+      documentViewModal.itemDetails ||
+      
       documentViewModal.type ||
       "-"}
   </td>
