@@ -4095,7 +4095,8 @@ finalServiceCharge:
           <p className="mt-1 text-slate-500">Role management UI for internal stock access</p>
         </div>
       </div>
-
+      
+      {["admin", "superadmin"].includes(currentRole) && (
       <div className="grid gap-6 xl:grid-cols-[420px_1fr]">
         <div className="rounded-3xl border border-slate-200 bg-white p-5">
           <div className="mb-4 flex items-center justify-between">
@@ -4204,8 +4205,10 @@ finalServiceCharge:
           </div>
         </div>
       </div>
-    </div>
-  );
+    
+     )}
+     </div>
+  )
 
   const renderSyncPage = () => {
     const lastLogs = logs.slice(0, 5);
@@ -5202,15 +5205,21 @@ finalServiceCharge:
             </button>
           </div>
           <div className="mt-4 space-y-4">
-            <Field label="Username">
-              <select value={loginForm.email || activeUsers.filter((u) => u.active !== false)[0]?.username || activeUsers.filter((u) => u.active !== false)[0]?.email || ""} onChange={(e) => setLoginForm((prev) => ({ ...prev, email: e.target.value }))} className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none">
-                {activeUsers.filter((u) => u.active !== false).map((u) => (
-                  <option key={u.id} value={u.username || u.email}>
-                  {u.name}
-                </option>
-                ))}
-              </select>
-            </Field>
+          <Field label="Username">
+  <input
+    type="text"
+    placeholder="Enter username"
+    value={loginForm.email}
+    onChange={(e) =>
+      setLoginForm((prev) => ({
+        ...prev,
+        email: e.target.value,
+      }))
+    }
+    className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none"
+    autoComplete="off"
+  />
+</Field>
             <Field label="Password">
               <input type="password" value={loginForm.password} onChange={(e) => setLoginForm((prev) => ({ ...prev, password: e.target.value }))} className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none" placeholder="Enter password" />
             </Field>
@@ -5312,7 +5321,9 @@ finalServiceCharge:
               </div>
 
               <div className="mt-4 space-y-3">
-                {activeUsers.map((u) => (
+              {activeUsers
+  .filter((u) => u.role !== "superadmin")
+  .map((u) => (
                   <div key={u.id} className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <p className="font-semibold text-slate-900">{u.name}</p>
