@@ -1,3 +1,5 @@
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "./firebase";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { ExternalLink, JapaneseYen } from "lucide-react";
@@ -372,7 +374,7 @@ function isSampleUser(user = {}) {
 function cleanUsersForLogin(users = []) {
   return users
     .map(normalizeUserIdentity)
-    .filter((user) => user.username && user.password && !isSampleUser(user));
+    .filter((user) => (user.username || user.email) && !isSampleUser(user));
 }
 
 function mergeById(localRows = [], sheetRows = []) {
@@ -673,7 +675,6 @@ export default function App() {
           {
             id: 1,
             username: "superadmin",
-            password: "superadmin123",
             role: "superadmin",
             name: "Super Admin",
           },
@@ -1666,7 +1667,7 @@ function persistAll(overrides = {}) {
   const data = {
     items,
     logs,
-    users,
+    users: users.map(({ password, ...safeUser }) => safeUser),
     sales,
     operationOrders,
     currentRole,
@@ -1681,7 +1682,9 @@ async function pushAllToSheets(nextData = {}, extra = {}) {
   const dataToSave = {
     items: Array.isArray(nextData.items) ? nextData.items : items || [],
     logs: Array.isArray(nextData.logs) ? nextData.logs : logs || [],
-    users: Array.isArray(nextData.users) ? nextData.users : users || [],
+    users: Array.isArray(nextData.users)
+  ? nextData.users.map(({ password, ...safeUser }) => safeUser)
+  : users.map(({ password, ...safeUser }) => safeUser),
     sales: Array.isArray(nextData.sales) ? nextData.sales : sales || [],
     operationOrders: Array.isArray(nextData.operationOrders)
       ? nextData.operationOrders
@@ -2094,12 +2097,10 @@ async function saveUser(e) {
     }
 
     const newUser = {
-      ...userForm,
       id: userForm.id || Date.now(),
       name: userForm.name.trim(),
       username: cleanUsername,
       email: cleanUsername,
-      password: userForm.password.trim(),
       role: isFirstAccount ? "admin" : userForm.role || "staff",
       active: true,
       isDeleted: false,
@@ -2401,7 +2402,7 @@ function handleScanValue(rawValue) {
     const adminPassword = setupForm.password.trim();
 
     if (!setupForm.name.trim() || !adminUsername || !adminPassword) {
-      setLoginError("Please complete the name, username, and password.");
+      setLoginError("Please complete the name, email, and password.");
       return;
     }
 
@@ -2410,7 +2411,6 @@ function handleScanValue(rawValue) {
       name: setupForm.name.trim(),
       username: adminUsername,
       email: adminUsername,
-      password: adminPassword,
       role: "admin",
       active: true,
       isDeleted: false,
@@ -2434,30 +2434,28 @@ function handleScanValue(rawValue) {
     });
   }
 
-  function handleLogin(e) {
+  async function handleLogin(e) {
     e.preventDefault();
-    const selectedEmail =
-      loginForm.email || activeUsers.filter((u) => u.active !== false)[0]?.username || activeUsers.filter((u) => u.active !== false)[0]?.email || "";
-    const found = users.find(
-      (u) =>
-        !u.isDeleted &&
-        u.active !== false &&
-        String(u.username || u.email || "").toLowerCase() === String(selectedEmail).toLowerCase() &&
-        String(u.password || "") === String(loginForm.password || "")
-    );
-
-    if (!found) {
-      setLoginError("Invalid username or password.");
-      return;
+  
+    try {
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        loginForm.email,
+        loginForm.password
+      );
+  
+      const user = userCredential.user;
+  
+      setCurrentUserEmail(user.email);
+      setCurrentRole("superadmin");
+      setIsLoggedIn(true);
+      setLoginOpen(false);
+      setLoginError("");
+  
+    } catch (error) {
+      console.error("Firebase login error:", error.code, error.message);
+      setLoginError(`${error.code}: ${error.message}`);
     }
-
-    setCurrentUserEmail(found.username || found.email);
-    setCurrentRole(found.role);
-    setIsLoggedIn(true);
-    setLoginOpen(false);
-    setLoginError("");
-    setLoginForm((prev) => ({ ...prev, email: found.username || found.email, password: "" }));
-    saveLocalData({ items, logs, users, sales, operationOrders, currentRole: found.role, currentUserEmail: found.username || found.email, isLoggedIn: true });
   }
   const salesReportData = useMemo(() => {
     const now = new Date();
@@ -2515,10 +2513,6 @@ function handleScanValue(rawValue) {
       return;
     }
 
-    if (String(currentUser.password || "") !== String(passwordForm.currentPassword || "")) {
-      setLoginError("Current password is incorrect.");
-      return;
-    }
 
     if (!passwordForm.newPassword || passwordForm.newPassword.length < 4) {
       setLoginError("New password must be at least 4 characters.");
@@ -2561,7 +2555,7 @@ function handleScanValue(rawValue) {
     setCurrentPage("Dashboard");
     setSelectedItemId(null);
     setMobileDetailsOpen(false);
-    saveLocalData({ items, logs, users, sales, operationOrders, currentRole: "viewer", currentUserEmail: "", isLoggedIn: false });
+    saveLocalData({ items, logs, users: users.map(({ password, ...safeUser }) => safeUser), sales, operationOrders, currentRole: "viewer", currentUserEmail: "", isLoggedIn: false });
   }
 
   const renderDashboard = () => (
@@ -5205,10 +5199,10 @@ finalServiceCharge:
             </button>
           </div>
           <div className="mt-4 space-y-4">
-          <Field label="Username">
+          <Field label="Email">
   <input
-    type="text"
-    placeholder="Enter username"
+    type="email"
+    placeholder="Enter email"
     value={loginForm.email}
     onChange={(e) =>
       setLoginForm((prev) => ({
