@@ -1,5 +1,14 @@
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "./firebase";
+import {
+  collection,
+  doc,
+  setDoc,
+  getDocs,
+  deleteDoc,
+} from "firebase/firestore";
+
+import { db } from "./firebase";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { ExternalLink, JapaneseYen } from "lucide-react";
@@ -1045,10 +1054,13 @@ const companyInfo = {
     
     }, []);
 
+    useEffect(() => {
+      loadItemsFromFirestore();
+    }, []);
 
-  useEffect(() => {
-    loadItemsFromSheet();
-  }, []);
+  //useEffect(() => {
+   // loadItemsFromSheet();
+  //}, []);
 
   useEffect(() => {
     const openItemFromHash = () => {
@@ -1086,6 +1098,34 @@ const companyInfo = {
     document.addEventListener("click", handleClick);
     return () => document.removeEventListener("click", handleClick);
   }, []);
+
+  async function saveItemsToFirestore(itemsToSave) {
+    const snapshot = await getDocs(collection(db, "items"));
+  
+    const currentIds = itemsToSave.map((item) => String(item.id));
+  
+    for (const docSnap of snapshot.docs) {
+      if (!currentIds.includes(docSnap.id)) {
+        await deleteDoc(doc(db, "items", docSnap.id));
+      }
+    }
+  
+    for (const item of itemsToSave) {
+      await setDoc(doc(db, "items", String(item.id)), item);
+    }
+  }
+  
+  async function loadItemsFromFirestore() {
+    const snapshot = await getDocs(collection(db, "items"));
+    const firestoreItems = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+  
+    if (firestoreItems.length > 0) {
+      setItems(firestoreItems);
+    }
+  }
 
   async function syncToGoogleSheet(payload) {
     const res = await fetch(GOOGLE_SCRIPT_URL, {
@@ -1677,6 +1717,12 @@ function persistAll(overrides = {}) {
     ...overrides,
   };
   saveLocalData(data);
+
+if (data.items?.length > 0) {
+  saveItemsToFirestore(data.items);
+
+  setLastSync(new Date().toLocaleTimeString());
+}
 }
 
 async function pushAllToSheets(nextData = {}, extra = {}) {
@@ -1845,6 +1891,11 @@ const updatedItems =
   setItems(updatedItems);
   setLogs(updatedLogs);
   setSelectedItemId(normalized.id);
+
+  persistAll({
+    items: updatedItems,
+    logs: updatedLogs,
+  });
 
   await pushAllToSheets(
     {
@@ -2336,6 +2387,88 @@ function handleScanValue(rawValue) {
             window.onload = () => {
               window.print();
             };
+          </script>
+        </body>
+      </html>
+    `);
+  
+    printWindow.document.close();
+  }
+
+  async function printBulkQrLabels(itemsToPrint) {
+    const activeItems = itemsToPrint.filter((item) => !item.isDeleted);
+  
+    const labels = await Promise.all(
+      activeItems.map(async (item) => {
+        const qrData = item.sku || item.barcode || item.id;
+        const qrUrl = await QRCode.toDataURL(String(qrData));
+  
+        return `
+          <div class="label">
+            <img src="${qrUrl}" />
+            <div class="name">${item.name || "Unnamed Item"}</div>
+            <div class="sku">${qrData}</div>
+          </div>
+        `;
+      })
+    );
+  
+    const printWindow = window.open("", "_blank");
+  
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Bulk QR Labels</title>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              padding: 16px;
+            }
+  
+            .sheet {
+              display: grid;
+              grid-template-columns: repeat(3, 1fr);
+              gap: 12px;
+            }
+  
+            .label {
+              border: 1px solid #000;
+              padding: 10px;
+              text-align: center;
+              page-break-inside: avoid;
+            }
+  
+            img {
+              width: 120px;
+              height: 120px;
+            }
+  
+            .name {
+              font-weight: bold;
+              margin-top: 6px;
+              font-size: 13px;
+            }
+  
+            .sku {
+              font-size: 11px;
+              margin-top: 4px;
+            }
+  
+            @media print {
+              .label {
+                break-inside: avoid;
+              }
+            }
+          </style>
+        </head>
+  
+        <body>
+          <div class="sheet">
+            ${labels.join("")}
+          </div>
+  
+          <script>
+            window.onload = () => window.print();
           </script>
         </body>
       </html>
@@ -2885,6 +3018,9 @@ function handleScanValue(rawValue) {
             </div>
           </div>
 
+          <span className="text-xs text-slate-400">
+           Last synced: {lastSync}
+          </span>
       
           <div className="mt-6 grid gap-3 lg:grid-cols-[1fr_auto]">
             <div className="relative">
@@ -3111,7 +3247,7 @@ function handleScanValue(rawValue) {
           </div>
 
           <div className="mt-4 flex justify-center">
-            <div className="h-[160px] w-[160px] overflow-hidden rounded-2xl border border-slate-300">
+            <div className="h-[200px] w-[200px] overflow-hidden rounded-2xl border border-slate-300">
               {selectedItem.image ? (
                 <img
                   src={selectedItem.image}
@@ -3126,11 +3262,11 @@ function handleScanValue(rawValue) {
             </div>
           </div>
 
-          <div className="mt-4 flex justify-center">
-            <div className="flex h-[160px] w-[160px] flex-col items-center justify-center rounded-2xl border border-slate-300">
+          <div className="col-span-full mt-4 flex justify-center">
+            <div className="flex h-[200px] w-[200px] flex-col items-center justify-center rounded-xl border border-slate-300">
               <QRCodeSVG
                 value={window.location.origin + window.location.pathname + "#item=" + encodeURIComponent(selectedItem.id) + "&view=details"}
-                size={120}
+                size={150}
               />
               <p className="mt-2 text-xs text-slate-600">{selectedItem.id}</p>
             </div>
@@ -3203,6 +3339,13 @@ function handleScanValue(rawValue) {
             onClick={() => printQrLabel(selectedItem)}>
               <Printer className="mr-2 h-4 w-4" />
               Print Label
+            </AppButton>
+            
+            <AppButton
+            variant="outline"
+            onClick={() => printBulkQrLabels(enrichedItems)}
+            >
+            Print All QR Labels
             </AppButton>
 
             <AppButton
