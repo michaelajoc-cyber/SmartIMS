@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { ExternalLink, JapaneseYen } from "lucide-react";
 import { Html5Qrcode } from "html5-qrcode";
+import QRCode from "qrcode";
 import html2canvas from "html2canvas";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
@@ -2217,12 +2218,28 @@ function handleScanValue(rawValue) {
 
   if (found) {
     setSelectedItemId(found.id);
-    setScannerStatus(`Matched item: ${found.id}`);
+    setScannerStatus(`Matched item: ${found.name || found.id}`);
     setCurrentPage("Inventory");
     setMobileDetailsOpen(true);
     setTimeout(() => stopScanner(), 300);
   } else {
-    setScannerStatus(`No matching item found: ${rawValue}`);
+    setItemForm({
+      ...emptyItemForm,
+      id: `SKU-${Date.now()}`,
+      sku: extractedValue,
+      barcode: extractedValue,
+      name: "",
+      quantity: 1,
+      stock: 1,
+      active: true,
+      isDeleted: false,
+    });
+  
+    setSelectedItemId(null);
+    setItemFormOpen(true);
+    setScannerStatus(`New item detected: ${extractedValue}`);
+    setCurrentPage("Inventory");
+    stopScanner();
   }
 }
 
@@ -2262,6 +2279,69 @@ function handleScanValue(rawValue) {
       }
     } catch {}
     setScannerEnabled(false);
+  }
+
+  async function printQrLabel(item) {
+    const qrData = item.sku || item.barcode || item.id;
+  
+    const qrUrl = await QRCode.toDataURL(String(qrData));
+  
+    const printWindow = window.open("", "_blank");
+  
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>QR Label</title>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              text-align: center;
+              padding: 20px;
+            }
+  
+            .label {
+              width: 220px;
+              border: 1px solid #000;
+              padding: 12px;
+              margin: auto;
+            }
+  
+            img {
+              width: 180px;
+              height: 180px;
+            }
+  
+            h3 {
+              margin: 8px 0;
+            }
+  
+            p {
+              margin: 4px 0;
+              font-size: 14px;
+            }
+          </style>
+        </head>
+  
+        <body>
+          <div class="label">
+            <h3>${item.name || "Unnamed Item"}</h3>
+  
+            <img src="${qrUrl}" />
+  
+            <p><strong>SKU:</strong> ${item.sku || "-"}</p>
+            <p><strong>Barcode:</strong> ${item.barcode || "-"}</p>
+          </div>
+  
+          <script>
+            window.onload = () => {
+              window.print();
+            };
+          </script>
+        </body>
+      </html>
+    `);
+  
+    printWindow.document.close();
   }
 
   async function confirmDeleteItem() {
@@ -2507,45 +2587,7 @@ function handleScanValue(rawValue) {
 
   async function handleChangePassword(e) {
     e.preventDefault();
-
-    if (!isLoggedIn || !currentUser) {
-      setLoginError("Please use an authorized account first.");
-      return;
-    }
-
-
-    if (!passwordForm.newPassword || passwordForm.newPassword.length < 4) {
-      setLoginError("New password must be at least 4 characters.");
-      return;
-    }
-
-    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      setLoginError("New passwords do not match.");
-      return;
-    }
-
-    setPasswordSaveStatus("saving");
-
-    const updatedUsers = users.map((u) =>
-      String(u.id) === String(currentUser.id)
-        ? { ...u, password: passwordForm.newPassword, updatedAt: new Date().toLocaleString("sv-SE", {
-          timeZone: "Asia/Bangkok"
-        }).replace(" ", "T") }
-        : u
-    );
-
-    setUsers(updatedUsers);
-    setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
-    setLoginError("");
-    persistAll({ users: updatedUsers });
-
-    await pushAllToSheets(
-      { items, logs, users: updatedUsers, sales, operationOrders },
-      { action: "CHANGE_PASSWORD", user: updatedUsers.find((u) => String(u.id) === String(currentUser.id)) }
-    );
-
-    setPasswordSaveStatus("saved");
-    setTimeout(() => setPasswordSaveStatus("idle"), 1000);
+    setLoginError("Password changes are now managed through Firebase Authentication.");
   }
 
   function handleLogout() {
@@ -3156,7 +3198,9 @@ function handleScanValue(rawValue) {
               Edit Item
             </AppButton>
 
-            <AppButton variant="outline" className="h-12" onClick={() => printLabel(selectedItem)}>
+            <AppButton variant="outline" 
+            className="h-12" 
+            onClick={() => printQrLabel(selectedItem)}>
               <Printer className="mr-2 h-4 w-4" />
               Print Label
             </AppButton>
