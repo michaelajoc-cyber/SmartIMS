@@ -2016,7 +2016,7 @@ async function saveSale(e) {
   if (!permissions.canProcessSales) return;
   setSaleSaveStatus("saving");
 
-  const item = enrichedItems.find((x) => String(x.id) === String(saleForm.sku));
+  const item = enrichedItems.find((x) => String(x.id) === String(saleForm.itemId));
   if (!item) {
     alert("Please select an item to sell.");
     setSaleSaveStatus("idle");
@@ -2395,7 +2395,7 @@ function handleScanValue(rawValue) {
   }
 
   async function printQrLabel(item) {
-    const qrData = item.sku || item.barcode || item.id;
+    const qrData = item.id || item.sku || item.barcode;
   
     const qrUrl = await QRCode.toDataURL(String(qrData));
   
@@ -2441,6 +2441,7 @@ function handleScanValue(rawValue) {
   
             <img src="${qrUrl}" />
   
+            <p><strong>ID:</strong> ${item.id || "-"}</p>
             <p><strong>SKU:</strong> ${item.sku || "-"}</p>
             <p><strong>Barcode:</strong> ${item.barcode || "-"}</p>
           </div>
@@ -2462,7 +2463,7 @@ function handleScanValue(rawValue) {
   
     const labels = await Promise.all(
       activeItems.map(async (item) => {
-        const qrData = item.sku || item.barcode || item.id;
+        const qrData = item.id || item.sku || item.barcode;
         const qrUrl = await QRCode.toDataURL(String(qrData));
   
         return `
