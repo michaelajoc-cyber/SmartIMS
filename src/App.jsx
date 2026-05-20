@@ -2321,6 +2321,68 @@ function handleScanValue(rawValue) {
     }
   }
 
+  function handleSalesScan(rawValue) {
+    let cleanValue = String(rawValue).trim();
+  
+    try {
+      const url = new URL(cleanValue);
+      const hashParams = new URLSearchParams(url.hash.replace("#", ""));
+      cleanValue = hashParams.get("item") || cleanValue;
+    } catch {}
+  
+    cleanValue = cleanValue.toLowerCase();
+  
+    const found = enrichedItems.find((item) => {
+      const values = [
+        item.id,
+        item.sku,
+        item.barcode,
+        item.name,
+      ].map((v) => String(v || "").trim().toLowerCase());
+  
+      return values.includes(cleanValue);
+    });
+  
+    if (!found) {
+      alert(`Item not found: ${rawValue}`);
+      return;
+    }
+  
+    setSaleForm((prev) => ({
+      ...prev,
+      itemId: found.id,
+      quantity: 1,
+    }));
+  
+    setScannerStatus(`Selected item: ${found.name}`);
+  }
+
+  async function startSalesScanner() {
+    try {
+      if (!scannerRef.current) return;
+  
+      const html5QrCode = new Html5Qrcode("sales-qr-reader");
+      scannerInstanceRef.current = html5QrCode;
+  
+      await html5QrCode.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: 250, aspectRatio: 1.0 },
+        (decodedText) => {
+          handleSalesScan(decodedText);
+          setTimeout(() => stopScanner(), 500);
+          stopScanner();
+        },
+        () => {}
+      );
+  
+      
+      setScannerStatus("Scan item for sale");
+    } catch (error) {
+      console.error(error);
+      setScannerStatus("Unable to start sales scanner");
+    }
+  }
+
   async function stopScanner() {
     try {
       if (scannerInstanceRef.current) {
@@ -3501,8 +3563,8 @@ function handleScanValue(rawValue) {
           <form className="space-y-4" onSubmit={saveSale}>
             <Field label="Item">
               <select
-                value={saleForm.sku}
-                onChange={(e) => setSaleForm((prev) => ({ ...prev, sku: e.target.value }))}
+                value={saleForm.itemId}
+                onChange={(e) => setSaleForm((prev) => ({ ...prev, itemId: e.target.value }))}
                 className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none"
               >
                 <option value="">Select item</option>
@@ -3529,7 +3591,8 @@ function handleScanValue(rawValue) {
 
               <Field label="Sold By">
                 <input
-                  value={saleForm.soldBy}
+                  value={currentUser?.name || currentUserEmail || "Current user"}
+                  readOnly
                   onChange={(e) =>
                     setSaleForm((prev) => ({ ...prev, soldBy: e.target.value }))
                   }
@@ -3550,9 +3613,36 @@ function handleScanValue(rawValue) {
             </Field>
 
             <AppButton
+              type="button"
+              onClick={() => {
+              setScannerEnabled(true);
+              setScannerStatus("Opening camera...");
+              setTimeout(() => startSalesScanner(), 300);
+              }}
+              div className="w-full"
+              >
+              Scan Item
+          </AppButton>
+
+              {scannerEnabled && (
+              <div className="mt-4 rounded-2xl border p-3">
+               <div id="sales-qr-reader" ref={scannerRef} className="w-full" />
+               <p className="mt-2 text-sm text-slate-500">{scannerStatus}</p>
+              <AppButton
+            type="button"
+            onClick={stopScanner}
+              className="mt-3 w-full bg-red-500 hover:bg-red-600"
+            >
+          Stop Camera
+        </AppButton>
+
+     </div>
+      )}
+
+               <AppButton
               className={`h-12 w-full ${saleSaveStatus === "saved" ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-100" : ""}`}
               disabled={!permissions.canProcessSales || saleSaveStatus === "saving"}
-            >
+              >
               <Receipt className="mr-2 h-4 w-4" />
               {saleSaveStatus === "saving"
                 ? "Saving..."
@@ -3563,12 +3653,12 @@ function handleScanValue(rawValue) {
           </form>
         </div>
 
-        <div className="relative h-[420px] overflow-hidden rounded-[28px] border border-slate-200 bg-white p-5">
+        <div className="relative rounded-[24px] border border-slate-200 bg-white p-5">
             <h2 className="text-xl font-semibold text-slate-900">
               Recent Sales</h2>
 
-              <div className="absolute bottom-2 right-15">
-              <div className="rounded-2xl bg-slate-5 px-5 py-2 text-sm text-slate-600 shadow-sm">
+              <div className="flex justify-end -mt-8 mb-4">
+              <div className="rounded-2xl bg-violet-50 border border-violet-200 px-5 py-3 text-sm text-violet-700 shadow-sm">
                 Total:{" "}
               <span className="font-semibold text-slate-900">
           {formatCurrency(totalSalesValue)}
